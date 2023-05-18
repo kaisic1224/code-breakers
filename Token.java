@@ -1,6 +1,5 @@
 
 // an object for a "colored token" used as part of the code for Mastermind
-
 class Token {
 
     static int number = 0; //

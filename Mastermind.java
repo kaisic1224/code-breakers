@@ -50,7 +50,7 @@ public class Mastermind {
                 code = game.playGuess(blackPegs, whitePegs);
 
                 System.out.println("allPossibleCombos:");
-                print2DTokenArray(game.allPossibleCombos);
+                // print2DTokenArray(game.allPossibleCombos);
                 System.out.println("remainingCombos:");
                 print2DTokenArray(game.remainingCombos);
 
