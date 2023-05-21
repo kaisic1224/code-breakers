@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,19 +18,50 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public CodeBreaker() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        JPanel panel = new JPanel(new GridBagLayout());
-        Image logo = new ImageIcon("./assets/logo.png").getImage();
-        JLabel heroLogo = new JLabel(new ImageIcon(logo.getScaledInstance(600, 374, Image.SCALE_DEFAULT)), JLabel.CENTER);
 
-        JButton aiPlay = new JButton("JACKIE CHAN");
-        JButton personPlay = new JButton("JACKIE BLACK");
-        panel.add(heroLogo);
-        panel.add(aiPlay);
-        panel.add(personPlay);
-        add(panel);
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        JPanel hero = new JPanel();
+        BoxLayout heroLayout = new BoxLayout(hero, BoxLayout.Y_AXIS);
+        hero.setLayout(heroLayout);
+        Image logo = new ImageIcon("./assets/logo.png").getImage();
+        JLabel heroLogo = new JLabel(new ImageIcon(logo.getScaledInstance(600, 374, Image.SCALE_FAST)),
+                JLabel.CENTER);
+        hero.add(heroLogo);
+
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new BoxLayout(buttons, BoxLayout.Y_AXIS));
+        buttons.setBorder(new EmptyBorder(0, 50, 0, 0)); // adjust to move over 50 pixels to the
+        Image arrowIcon = new ImageIcon("./assets/arrow.png").getImage(); // loading image as an icon
+        //------------------------------------------------
+        ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25,  Image.SCALE_FAST));
+        // JPanel aiButtonPlay = new JPanel(new FlowLayout());
+        JButton aiPlay = new JButton("JACKIE CHAN", arrowImg);
+        // aiButtonPlay.add(aiPlay);
+        // aiButtonPlay.add(arrowImg);
+        //------------------------------------------------
+        // JPanel personButtonPlay = new JPanel(new FlowLayout());
+        JButton personPlay = new JButton("JACKIE BLACK", arrowImg);
+        
+        // personButtonPlay.add(personPlay);
+        // personButtonPlay.add(arrowImg2);
+        //------------------------------------------------
+        // buttons.add(aiButtonPlay);
+        // buttons.add(personButtonPlay);
+        buttons.add(aiPlay);
+        buttons.add(personPlay);
+
+        hero.setBackground(new Color(255, 190, 121));
+        mainPanel.setBackground(new Color(255, 190, 121));
+        buttons.setBackground(new Color(255, 190, 121));
+
+        mainPanel.add(hero);
+        mainPanel.add(buttons);
+        add(mainPanel);
         pack();
         setVisible(true);
     }
+
     public static void main(String[] args) {
         // intialize objects
         scan = new Scanner(System.in);
@@ -53,7 +86,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             String[] userGuess = scan.nextLine().split(" ");
             String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
-            
+
             // where 1 = black and 0 = white;
             int[] pegHolder = board.returnPegs(feedBack);
 
