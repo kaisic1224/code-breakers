@@ -52,6 +52,7 @@ public class Board {
     }
 
     // THERE IS SOMETHING WRONG HERE
+    // hours wasted starting now: 1
     public String[] checkGuess(String[] guess, String[] solution, int turn) {
         String[] temporaryCode = solution.clone();
         String[] evaluation = new String[solution.length];
@@ -66,6 +67,9 @@ public class Board {
 
         // detect all wrong position, correct colour
         for (int i = 0; i < guess.length; i++) {
+            if (evaluation[i] != null) {
+                continue;
+            }
 
             if (evaluation[i] == null) {
                 for (int j = 0; j < guess.length; j++) {
