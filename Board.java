@@ -43,7 +43,6 @@ public class Board {
     }
 
     public void generateCode() {
-
         for (int i = 0; i < code.length; i++) {
             int randIndex = (int) (Math.random() * Colour.values().length);
             code[i] = Colour.values()[randIndex].name();

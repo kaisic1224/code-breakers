@@ -1,42 +1,41 @@
 import java.io.*;
 import java.util.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class CodeBreaker {
-
+public class CodeBreaker extends JFrame implements ActionListener {
+    final String fontColour = "#374151";
+    final String backgroundColour = "#FFBE79";
     private static Board board;
     private boolean pvp;
     private int turn;
 
     static Scanner scan; // is this allowed????
 
-    public static void main(String[] args) {
+    public CodeBreaker() {
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        JPanel panel = new JPanel(new GridBagLayout());
+        Image logo = new ImageIcon("./assets/logo.png").getImage();
+        JLabel heroLogo = new JLabel(new ImageIcon(logo.getScaledInstance(600, 374, Image.SCALE_DEFAULT)), JLabel.CENTER);
 
+        JButton aiPlay = new JButton("JACKIE CHAN");
+        JButton personPlay = new JButton("JACKIE BLACK");
+        panel.add(heroLogo);
+        panel.add(aiPlay);
+        panel.add(personPlay);
+        add(panel);
+        pack();
+        setVisible(true);
+    }
+    public static void main(String[] args) {
         // intialize objects
         scan = new Scanner(System.in);
         board = new Board();
+        new CodeBreaker();
 
         boolean quitGame = false;
-
-        do {
-
-            System.out.println("Welcome to the mastermind game!");
-            System.out.println("Menu:");
-            System.out.println("   1. play against an AI as a code breaker");
-            System.out.println("   2. play against an AI as a code setter");
-            System.out.println("   3. exit game");
-
-            int userInput = Integer.parseInt(scan.nextLine());
-
-            if (userInput == 1) {
-                playerIsCodeBreaker();
-            } else if (userInput == 2) {
-                playerIsCodeSetter();
-            } else if (userInput == 3) {
-                System.out.println("bye bye! :)");
-                quitGame = true;
-            }
-
-        } while (!quitGame);
     }
 
     public static void playerIsCodeBreaker() {
@@ -103,6 +102,12 @@ public class CodeBreaker {
             whites = Integer.parseInt(scan.nextLine());
         } while (true);
 
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
 }
