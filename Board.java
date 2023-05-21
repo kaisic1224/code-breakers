@@ -67,16 +67,16 @@ public class Board {
 
         // detect all wrong position, correct colour
         for (int i = 0; i < guess.length; i++) {
-            if (evaluation[i] != null) {
-                continue;
+            if (evaluation[i] != null) { // if evaluation already declared black or white, skip
+                continue; // prevents overwriting existing feedback or relabeling black peg as white
             }
 
-            if (evaluation[i] == null) {
+            if (evaluation[i] == null) { // colour that was not black
                 for (int j = 0; j < guess.length; j++) {
-                    if (guess[i].equals(temporaryCode[j])) {
-                        evaluation[i] = "w";
+                    if (guess[i].equals(temporaryCode[j])) { // check if solution contains colour
+                        evaluation[i] = "w"; // add to feedback
 
-                        temporaryCode[j] = null;
+                        temporaryCode[j] = null; // invalidate colour so cannot be detected on next scan through
                         break;
                     }
                 }
@@ -87,19 +87,27 @@ public class Board {
         board[turn] = guess;
         guesses[turn] = evaluation;
 
-        return evaluation;
+        // remove all nulls
+        ArrayList<String> fb = new ArrayList<String>();
+        for (int i = 0; i < evaluation.length; i++) {
+            if (evaluation[i] != null) {
+                fb.add(evaluation[i]); // add only colours to arraylist
+            }
+        }
+
+        String[] a = new String[fb.size()];
+
+        return fb.toArray(a);
     }
 
     public int[] returnPegs(String[] evaluation) {
         int[] pegHolder = new int[2]; // where 1 = black and 0 = white;
 
         for (int i = 0; i < evaluation.length; i++) {
-            if (evaluation[i] != null) {
-                if (evaluation[i].equals("w")) {
-                    pegHolder[0]++;
-                } else if (evaluation[i].equals("b")) {
-                    pegHolder[1]++;
-                }
+            if (evaluation[i].equals("w")) {
+                pegHolder[0]++;
+            } else if (evaluation[i].equals("b")) {
+                pegHolder[1]++;
             }
         }
 

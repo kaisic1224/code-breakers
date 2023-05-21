@@ -6,7 +6,8 @@ public class TestGame {
 
         Board b = new Board();
         String[] guess = { "G", "B", "O", "B" };
+        String[] code = {"R", "G", "B", "B"};
 
-        b.checkGuess(guess, 0);
+        b.checkGuess(guess, code, 0);
     }
 }

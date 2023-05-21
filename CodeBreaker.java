@@ -54,7 +54,7 @@ public class CodeBreaker {
 
             String[] userGuess = scan.nextLine().split(" ");
             String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
-
+            
             // where 1 = black and 0 = white;
             int[] pegHolder = board.returnPegs(feedBack);
 
