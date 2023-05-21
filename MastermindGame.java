@@ -4,16 +4,15 @@ public class MastermindGame {
     Token[] lastGuess; // the most recent guess guessed
     int np;
 
-    Token[][] allPossibleCombos; // all possible token combos
     Token[][] remainingCombos; // token combos remaining in the set
 
     // CONSTRUCTOR
     MastermindGame(Token[] tokens, int np) {
         // get all possible code combos based on np, nc
         this.np = np;
-        allPossibleCombos = generateAllPossibleCombos(tokens.length, tokens); // get all possible combinations of the
-                                                                              // tokens
-        remainingCombos = allPossibleCombos.clone();
+        remainingCombos = generateAllPossibleCombos(tokens.length, tokens); // get all possible combinations of the
+                                                                            // tokens
+        remainingCombos = remainingCombos.clone();
 
         firstGuess = new Token[np];
 
@@ -24,7 +23,7 @@ public class MastermindGame {
             firstGuess[2] = new Token(tokens[1].toString());
             firstGuess[3] = new Token(tokens[1].toString());
         } else {
-            firstGuess = allPossibleCombos[0];
+            firstGuess = remainingCombos[0];
         }
 
     }
