@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
@@ -18,8 +19,19 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public CodeBreaker() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setTitle("CodeBreakers | Main Menu");
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel panel2 = new JPanel();
+        panel2.setBackground(Color.BLUE);
+        panel2.setOpaque(false);
+        panel2.setLayout(new BorderLayout());
+
+        JLabel label = new JLabel("Fading Panel");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 24f));
+        label.setForeground(Color.WHITE);
+        panel2.add(label, BorderLayout.CENTER);
 
         JPanel hero = new JPanel();
         BoxLayout heroLayout = new BoxLayout(hero, BoxLayout.Y_AXIS);
@@ -33,19 +45,55 @@ public class CodeBreaker extends JFrame implements ActionListener {
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.Y_AXIS));
         buttons.setBorder(new EmptyBorder(0, 50, 0, 0)); // adjust to move over 50 pixels to the
         Image arrowIcon = new ImageIcon("./assets/arrow.png").getImage(); // loading image as an icon
-        //------------------------------------------------
-        ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25,  Image.SCALE_FAST));
+        // ------------------------------------------------
+        ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25, Image.SCALE_FAST));
         // JPanel aiButtonPlay = new JPanel(new FlowLayout());
         JButton aiPlay = new JButton("JACKIE CHAN", arrowImg);
+        aiPlay.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Timer for fading in
+                Timer timer = new Timer(20, new ActionListener() {
+                    private float opacity = 0f;
+                    private float increment = 0.05f;
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        opacity += increment;
+                        if (opacity >= 1f) {
+                            opacity = 1f;
+                            ((Timer) e.getSource()).stop(); // Stop the timer
+                        }
+                        panel2.setOpaque(true);
+                        panel2.setBackground(new Color(0, 0, 255, (int) (opacity * 255)));
+                        label.setForeground(new Color(255, 255, 255, (int) (opacity * 255)));
+                    }
+                });
+
+                setVisible(true);
+                timer.start();
+
+                // Wait for a while before adding the new panel
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                getContentPane().remove(mainPanel);
+                getContentPane().add(panel2, BorderLayout.CENTER);
+                revalidate();
+                repaint();
+            }
+        });
+
         // aiButtonPlay.add(aiPlay);
         // aiButtonPlay.add(arrowImg);
-        //------------------------------------------------
+        // ------------------------------------------------
         // JPanel personButtonPlay = new JPanel(new FlowLayout());
         JButton personPlay = new JButton("JACKIE BLACK", arrowImg);
-        
+
         // personButtonPlay.add(personPlay);
         // personButtonPlay.add(arrowImg2);
-        //------------------------------------------------
+        // ------------------------------------------------
         // buttons.add(aiButtonPlay);
         // buttons.add(personButtonPlay);
         buttons.add(aiPlay);
