@@ -35,6 +35,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         JPanel boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
+        boardPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
         JPanel guessPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
         for (int i = 0; i < board.getTries(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
@@ -48,7 +49,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         for (int i = 0; i < board.getTries(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
                 JLabel cell = new JLabel();
-                cell.setPreferredSize(new Dimension(40, 40));
+                cell.setPreferredSize(new Dimension(50, 50));
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 guessPanel.add(cell);
             }
@@ -56,6 +57,11 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         mainPanel.add(boardPanel);
         mainPanel.add(guessPanel);
+
+
+        JPanel colourPicker = new JPanel(new FlowLayout());
+            
+
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
         c.fill = GridBagConstraints.HORIZONTAL; // fill in width
@@ -211,6 +217,28 @@ public class CodeBreaker extends JFrame implements ActionListener {
             System.out.println("How many white pegs?");
             whites = Integer.parseInt(scan.nextLine());
         } while (true);
+
+    }
+
+
+    public static void saveToFile(String[] record, String accountName) throws IOException {
+        PrintWriter aw = new PrintWriter(new FileWriter("./accounts/" + accountName + ".txt", true));
+
+        aw.println(String.join(",", record));
+
+        aw.close();
+    }
+
+    public static String getRecord(String[] accountName) throws IOException{
+        BufferedReader br = new BufferedReader(new FileReader("./accounts/" + accountName + ".txt"));
+
+        String line = br.readLine();
+        while (line != null) {
+            br.close();
+            return line;
+        }
+        br.close();
+        return null;
 
     }
 
