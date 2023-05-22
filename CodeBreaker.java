@@ -14,8 +14,26 @@ public class CodeBreaker extends JFrame implements ActionListener {
     private static Board board;
     private boolean pvp;
     private int turn;
-
+    
+    static Font ForeverFontBold = null;
     static Scanner scan; // is this allowed????
+    
+    public static void LoadAssets() {
+        Font ForeverFont = null;
+        try {
+            ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./assets/Forever.ttf"));
+        } catch (Exception e) {
+            System.out.println("File could not be found, or error parsing font");
+        }
+        ForeverFontBold = ForeverFont.deriveFont(Font.BOLD, 16f);
+    }
+
+    public static void Game(JFrame frame) {
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+
+        frame.setVisible(true);
+    }
 
     public CodeBreaker() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -49,39 +67,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
         ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25, Image.SCALE_FAST));
         // JPanel aiButtonPlay = new JPanel(new FlowLayout());
         JButton aiPlay = new JButton("JACKIE CHAN", arrowImg);
+        aiPlay.setFont(ForeverFontBold);
         aiPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Timer for fading in
-                Timer timer = new Timer(20, new ActionListener() {
-                    private float opacity = 0f;
-                    private float increment = 0.05f;
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        opacity += increment;
-                        if (opacity >= 1f) {
-                            opacity = 1f;
-                            ((Timer) e.getSource()).stop(); // Stop the timer
-                        }
-                        panel2.setOpaque(true);
-                        panel2.setBackground(new Color(0, 0, 255, (int) (opacity * 255)));
-                        label.setForeground(new Color(255, 255, 255, (int) (opacity * 255)));
-                    }
-                });
-
-                setVisible(true);
-                timer.start();
-
-                // Wait for a while before adding the new panel
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                getContentPane().remove(mainPanel);
-                getContentPane().add(panel2, BorderLayout.CENTER);
-                revalidate();
-                repaint();
+                JFrame gameFrame = new JFrame("Code Breakers | Game");
+                Game(gameFrame);
+                setVisible(false);
             }
         });
 
@@ -90,6 +81,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // ------------------------------------------------
         // JPanel personButtonPlay = new JPanel(new FlowLayout());
         JButton personPlay = new JButton("JACKIE BLACK", arrowImg);
+        personPlay.setFont(ForeverFontBold);
 
         // personButtonPlay.add(personPlay);
         // personButtonPlay.add(arrowImg2);
@@ -111,6 +103,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
+        // load assets
+        LoadAssets();
         // intialize objects
         scan = new Scanner(System.in);
         board = new Board();
