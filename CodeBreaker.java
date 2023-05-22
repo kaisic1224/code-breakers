@@ -14,10 +14,10 @@ public class CodeBreaker extends JFrame implements ActionListener {
     private static Board board;
     private boolean pvp;
     private int turn;
-    
+
     static Font ForeverFontBold = null;
     static Scanner scan; // is this allowed????
-    
+
     public static void LoadAssets() {
         Font ForeverFont = null;
         try {
@@ -28,10 +28,40 @@ public class CodeBreaker extends JFrame implements ActionListener {
         ForeverFontBold = ForeverFont.deriveFont(Font.BOLD, 16f);
     }
 
+    // will use current object inside Board instance variable to render board
     public static void Game(JFrame frame) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setLayout(new GridBagLayout());
 
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
+        JPanel guessPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
+        for (int i = 0; i < board.getTries(); i++) {
+            for (int j = 0; j < board.getSize(); j++) {
+                JLabel cell = new JLabel("");
+                cell.setPreferredSize(new Dimension(50, 50));
+                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                boardPanel.add(cell);
+            }
+        }
 
+        for (int i = 0; i < board.getTries(); i++) {
+            for (int j = 0; j < board.getSize(); j++) {
+                JLabel cell = new JLabel();
+                cell.setPreferredSize(new Dimension(40, 40));
+                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                guessPanel.add(cell);
+            }
+        }
+
+        mainPanel.add(boardPanel);
+        mainPanel.add(guessPanel);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridy = 0; // take the first row in the layout
+        c.fill = GridBagConstraints.HORIZONTAL; // fill in width
+        c.anchor = GridBagConstraints.NORTH;
+        c.weightx = 1.0;
+        frame.add(mainPanel, c);
         frame.setVisible(true);
     }
 
@@ -68,9 +98,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // JPanel aiButtonPlay = new JPanel(new FlowLayout());
         JButton aiPlay = new JButton("JACKIE CHAN", arrowImg);
         aiPlay.setFont(ForeverFontBold);
+        aiPlay.setHorizontalTextPosition(JButton.LEFT);
         aiPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame gameFrame = new JFrame("Code Breakers | Game");
+                // playerIsCodeSetter(); fix later
+                board = new Board();
                 Game(gameFrame);
                 setVisible(false);
             }
@@ -82,6 +115,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // JPanel personButtonPlay = new JPanel(new FlowLayout());
         JButton personPlay = new JButton("JACKIE BLACK", arrowImg);
         personPlay.setFont(ForeverFontBold);
+        personPlay.setHorizontalTextPosition(JButton.LEFT);
 
         // personButtonPlay.add(personPlay);
         // personButtonPlay.add(arrowImg2);
@@ -107,13 +141,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
         LoadAssets();
         // intialize objects
         scan = new Scanner(System.in);
-        board = new Board();
+
         new CodeBreaker();
 
-        boolean quitGame = false;
     }
 
     public static void playerIsCodeBreaker() {
+        board = new Board();
 
         board.generateCode();
         board.printCode();
@@ -150,6 +184,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     }
 
     public static void playerIsCodeSetter() {
+        board = new Board();
         AICodeBreaker AI = new AICodeBreaker(board.getSize());
         AI.generateAllCombos(board.getSize());
 
