@@ -9,12 +9,12 @@ public class Board {
     private final int TRIES = 10;
 
     public enum Colour {
-        G,
-        R,
-        B,
-        Y,
-        O,
-        P
+        BLUE,
+        YELLOW,
+        ORANGE,
+        RED,
+        PINK,
+        GREEN,
     }
 
     public Board() {
