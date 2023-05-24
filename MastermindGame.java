@@ -5,14 +5,15 @@ public class MastermindGame {
     int np;
 
     Token[][] remainingCombos; // token combos remaining in the set
+    Token[][] allCombos;
 
     // CONSTRUCTOR
     MastermindGame(Token[] tokens, int np) {
         // get all possible code combos based on np, nc
         this.np = np;
-        remainingCombos = generateAllPossibleCombos(tokens.length, tokens); // get all possible combinations of the
-                                                                            // tokens
-        remainingCombos = remainingCombos.clone();
+        allCombos = generateAllPossibleCombos(tokens.length, tokens); // get all possible combinations of the
+                                                                      // tokens
+        remainingCombos = allCombos.clone();
 
         firstGuess = new Token[np];
 
@@ -50,7 +51,7 @@ public class MastermindGame {
             if (tokenArrayEquals(remainingCombos[i], lastGuess)) {
                 remainingCombos[i] = null;
             }
-
+            // goob
             if (remainingCombos[i] == null) {
                 continue; // skip null entries
             }
@@ -59,8 +60,8 @@ public class MastermindGame {
 
             if (temp[1] != black || temp[0] != white) {
 
-                System.out.println("whites " + temp[0] + " blacks: " + temp[1] + " | ");
-                printArray(remainingCombos[i]);
+                // System.out.println("whites " + temp[0] + " blacks: " + temp[1] + " | ");
+                // printArray(remainingCombos[i]);
                 remainingCombos[i] = null;
 
             } else if (counter == 0) {

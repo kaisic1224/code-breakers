@@ -6,7 +6,8 @@ public class AICodeBreaker {
     String[] firstGuess = { "B", "B", "R", "R" };
     String[] lastGuess; // the most recent guess guessed
 
-    ArrayList<String[]> remainingCombos = new ArrayList<String[]>();
+    String[][] remainingCombos;
+    String[][] allCombos;
     // FIGURE OUT HOW TO USE ENUM
     final String[] COLOURS = {
             "B",
@@ -21,11 +22,10 @@ public class AICodeBreaker {
     public AICodeBreaker(int numPositions) {
 
         board = new Board();
-        generateAllCombos(numPositions);
 
     }
 
-    ArrayList<String[]> getCombos() {
+    String[][] getCombos() {
         return remainingCombos;
     }
 
@@ -40,26 +40,29 @@ public class AICodeBreaker {
         // wikipedia mastermind algorithm step 5. this works perfectly
         int counter = 0;
 
-        for (int i = 0; i < remainingCombos.size(); i++) {
+        for (int i = 0; i < remainingCombos.length; i++) {
 
-            if (remainingCombos.get(i).equals(lastGuess)) {
-                remainingCombos.remove(i);
+            if (remainingCombos[i] != null) {
+                if (remainingCombos[i].equals(lastGuess)) {
+                    remainingCombos[i] = null;
+                } else {
+
+                    String[] feedback = board.checkGuess(lastGuess, remainingCombos[i], 0);
+                    int[] pegHolder = board.returnPegs(feedback);
+
+                    if (pegHolder[1] != black || pegHolder[0] != white) {
+
+                        remainingCombos[i] = null;
+
+                    } else if (counter == 0) {
+                        counter = i;
+                    }
+                }
             }
 
-            String[] feedback = board.checkGuess(lastGuess, remainingCombos.get(i), 0);
-            int[] temp = board.returnPegs(feedback);
-
-            if (temp[1] != black || temp[0] != white) {
-
-                System.out.println("whites " + temp[0] + " blacks: " + temp[1] + " | ");
-                remainingCombos.remove(i);
-
-            } else if (counter == 0) {
-                counter = i;
-            }
         }
 
-        lastGuess = remainingCombos.get(counter);
+        lastGuess = remainingCombos[counter];
         return lastGuess;
     }
 
@@ -67,24 +70,27 @@ public class AICodeBreaker {
 
         int[] combo = new int[numPositions];
         int[] prevCombo = new int[numPositions];
+        remainingCombos = new String[(int) Math.pow(COLOURS.length, numPositions)][numPositions];
 
         for (int i = 0; i < numPositions; i++) {
             combo[i] = 0;
         }
 
-        remainingCombos.add(translateIntToColour(combo));
+        remainingCombos[0] = translateIntoColour(combo);
 
         prevCombo = combo;
 
-        for (int i = 1; i < Math.pow(COLOURS.length, numPositions); i++) {
+        for (int i = 1; i < remainingCombos.length; i++) {
             combo = incrementCombo(prevCombo, numPositions, COLOURS.length);
-            remainingCombos.add(translateIntToColour(combo));
+            remainingCombos[i] = translateIntoColour(combo);
+
             prevCombo = combo;
         }
 
+        allCombos = remainingCombos.clone();
     }
 
-    private String[] translateIntToColour(int[] combo) {
+    private String[] translateIntoColour(int[] combo) {
         String[] colour = new String[combo.length];
         for (int i = 0; i < combo.length; i++) {
             colour[i] = COLOURS[combo[i]];
@@ -118,9 +124,9 @@ public class AICodeBreaker {
     }
 
     public void printRemainingCombos(int numPositions) {
-        for (int i = 0; i < remainingCombos.size(); i++) {
+        for (int i = 0; i < remainingCombos.length; i++) {
             for (int j = 0; j < numPositions; j++) {
-                System.out.print(remainingCombos.get(i)[j] + " ");
+                System.out.print(remainingCombos[i][j] + " ");
             }
             System.out.println(" ");
         }

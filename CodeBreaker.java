@@ -1,5 +1,7 @@
 import java.io.*;
+import java.security.AllPermission;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class CodeBreaker {
 
@@ -109,12 +111,17 @@ public class CodeBreaker {
     }
 
     public static void selfTest() {
+        System.out.println("SELF TEST -------------------------");
+
         AICodeBreaker AI = new AICodeBreaker(board.getSize());
         AI.generateAllCombos(board.getSize());
 
-        ArrayList<String[]> allCombos = AI.getCombos();
+        long startTime = System.nanoTime();
 
-        for (int i = 0; i < allCombos.size(); i++) {
+        int totalAttempts = 0;
+        for (int i = 0; i < AI.allCombos.length; i++) {
+
+            AI.remainingCombos = AI.allCombos.clone();
 
             int attempts = 1;
             int blacks = -1;
@@ -122,26 +129,39 @@ public class CodeBreaker {
 
             do {
                 String[] code = AI.playGuess(blacks, whites);
+                String[] feedback = board.checkGuess(code, AI.allCombos[i], 0);
+                int[] pegHolder = board.returnPegs(feedback);
+                blacks = pegHolder[1];
+                whites = pegHolder[0];
 
-                String[] feedback = board.checkGuess(code, allCombos.get(i), 0);
-                int[] temp = board.returnPegs(feedback);
-                if (temp[1] == board.getSize()) {
+                if (blacks == board.getSize()) {
                     break;
                 }
-                whites = temp[0];
 
                 attempts++;
 
-            } while (attempts <= 10);
+            } while (true);
 
-            String combination = "";
-
-            for (int j = 0; j < allCombos.get(i).length; j++) {
-                combination += allCombos.get(i)[j];
-            }
-            System.out.println("Attempts: " + attempts + " Combination: " + combination);
-
+            totalAttempts += attempts;
+            System.out.println("Attempts: " + attempts);
         }
 
+        long endTime = System.nanoTime();
+        long totalTime = endTime - startTime;
+
+        // STANDARD PEROFRAMNCE TOTAL: 6455 AVERAGE: 4.98071 TIME: 1718856000 (nano
+        // secs)
+        float avg = totalAttempts / 1296f;
+        System.out.println(
+                "TOTAL: " + totalAttempts + " AVERAGE: " + avg + " TIME: " + totalTime);
+
     }
+
+    public static void printArray(String[] array) {
+        for (int i = 0; i < array.length; i++) {
+            System.out.print(array[i] + " ");
+        }
+        System.out.println();
+    }
+
 }

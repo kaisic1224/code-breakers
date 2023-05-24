@@ -39,36 +39,33 @@ public class Mastermind {
             System.out.println("Starting new game...");
             MastermindGame game = new MastermindGame(tokens, np);
 
-            int blackPegs = -1;
-            int whitePegs = -1;
-            Token[] code = new Token[np];
+            for (int i = 0; i < game.allCombos.length; i++) {
 
-            do {
+                int attempts = 1;
+                int blackPegs = -1;
+                int whitePegs = -1;
 
-                // set code = to the guess. the guess was made based on the last setting of
-                // black and white pegs
-                code = game.playGuess(blackPegs, whitePegs);
+                Token[] code = new Token[np];
+                Token[] sol = game.allCombos[i];
+                game.remainingCombos = game.allCombos.clone();
 
-                System.out.println("allPossibleCombos:");
-                // print2DTokenArray(game.allPossibleCombos);
-                System.out.println("remainingCombos:");
-                print2DTokenArray(game.remainingCombos);
+                do {
 
-                System.out.print("Guessing: ");
-                printTokenArray(code);
+                    code = game.playGuess(blackPegs, whitePegs);
 
-                // get black and white peg counts
-                System.out.println("How many black pegs?");
-                blackPegs = Integer.parseInt(buffy.readLine());
-                if (blackPegs == np) {
-                    break;
-                }
-                System.out.println("How many white pegs?");
-                whitePegs = Integer.parseInt(buffy.readLine());
-            } while (true);
+                    int[] temp = game.countPegs(sol, code);
 
-            System.out.print("Got it! The code is: ");
-            printTokenArray(code);
+                    blackPegs = temp[1];
+                    if (blackPegs == np) {
+                        break;
+                    }
+
+                    whitePegs = temp[0];
+                    attempts++;
+                } while (true);
+
+                System.out.println(attempts);
+            }
 
             System.out.println("Play again? y/n");
             response = buffy.readLine();
