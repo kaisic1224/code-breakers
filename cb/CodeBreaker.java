@@ -1,3 +1,4 @@
+package cb;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -60,6 +61,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
 
         JPanel colourPicker = new JPanel(new FlowLayout());
+        // Graphics g = colourPicker.getGraphics();
+        // g.fillOval(20, 20, 10, 10);
+        for (int i = 0; i < board.getSize(); i++) {
+            JLabel peg = new JLabel("");
+            peg.setPreferredSize(new Dimension(50, 50));
+            peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            colourPicker.add(peg);
+        }
+        
             
 
         GridBagConstraints c = new GridBagConstraints();
@@ -68,6 +78,10 @@ public class CodeBreaker extends JFrame implements ActionListener {
         c.anchor = GridBagConstraints.NORTH;
         c.weightx = 1.0;
         frame.add(mainPanel, c);
+
+        c.gridy = 1;
+        frame.add(colourPicker, c);
+
         frame.setVisible(true);
     }
 

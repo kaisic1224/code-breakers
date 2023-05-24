@@ -1,3 +1,4 @@
+package cb;
 import java.util.*;
 
 public class AICodeBreaker {
