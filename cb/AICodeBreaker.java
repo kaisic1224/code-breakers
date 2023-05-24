@@ -1,5 +1,6 @@
 package cb;
 import java.util.*;
+import cb.Board.Colour;
 
 public class AICodeBreaker {
 
@@ -9,21 +10,18 @@ public class AICodeBreaker {
 
     ArrayList<String[]> remainingCombos = new ArrayList<String[]>();
     // FIGURE OUT HOW TO USE ENUM
-    final String[] COLOURS = {
-            "B",
-            "Y",
-            "O",
-            "R",
-            "P",
-            "G",
-    };
+    // final String[] COLOURS = {
+    //         "B",
+    //         "Y",
+    //         "O",
+    //         "R",
+    //         "P",
+    //         "G",
+    // };
 
     // CONSTRUCTOR
     public AICodeBreaker(int numPositions) {
-
         board = new Board();
-        generateAllCombos(numPositions);
-
     }
 
     String[] playGuess(int black, int white) {
@@ -73,8 +71,8 @@ public class AICodeBreaker {
 
         prevCombo = combo;
 
-        for (int i = 1; i < Math.pow(COLOURS.length, numPositions); i++) {
-            combo = incrementCombo(prevCombo, numPositions, COLOURS.length);
+        for (int i = 1; i < Math.pow(Colour.values().length, numPositions); i++) {
+            combo = incrementCombo(prevCombo, numPositions, Colour.values().length);
             remainingCombos.add(translateIntToColour(combo));
             prevCombo = combo;
         }
@@ -84,7 +82,7 @@ public class AICodeBreaker {
     private String[] translateIntToColour(int[] combo) {
         String[] colour = new String[combo.length];
         for (int i = 0; i < combo.length; i++) {
-            colour[i] = COLOURS[combo[i]];
+            colour[i] = Colour.values()[combo[i]].toString();
         }
 
         return colour;

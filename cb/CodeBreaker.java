@@ -4,6 +4,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import cb.Board.Colour;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,7 +23,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static void LoadAssets() {
         Font ForeverFont = null;
         try {
-            ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./assets/Forever.ttf"));
+            ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Forever.ttf"));
         } catch (Exception e) {
             System.out.println("File could not be found, or error parsing font");
         }
@@ -63,13 +64,21 @@ public class CodeBreaker extends JFrame implements ActionListener {
         JPanel colourPicker = new JPanel(new FlowLayout());
         // Graphics g = colourPicker.getGraphics();
         // g.fillOval(20, 20, 10, 10);
-        for (int i = 0; i < board.getSize(); i++) {
+        for (int i = 0; i < Colour.values().length; i++) {
             JLabel peg = new JLabel("");
             peg.setPreferredSize(new Dimension(50, 50));
             peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            peg.setOpaque(true);
+            Color c = null;
+            try {
+                c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
+                System.out.println(Colour.values()[i].toString().toUpperCase());
+                peg.setBackground(c);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             colourPicker.add(peg);
         }
-        
             
 
         GridBagConstraints c = new GridBagConstraints();
@@ -104,7 +113,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         JPanel hero = new JPanel();
         BoxLayout heroLayout = new BoxLayout(hero, BoxLayout.Y_AXIS);
         hero.setLayout(heroLayout);
-        Image logo = new ImageIcon("./assets/logo.png").getImage();
+        Image logo = new ImageIcon("./cb/assets/logo.png").getImage();
         JLabel heroLogo = new JLabel(new ImageIcon(logo.getScaledInstance(600, 374, Image.SCALE_FAST)),
                 JLabel.CENTER);
         hero.add(heroLogo);
@@ -112,7 +121,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.Y_AXIS));
         buttons.setBorder(new EmptyBorder(0, 50, 0, 0)); // adjust to move over 50 pixels to the
-        Image arrowIcon = new ImageIcon("./assets/arrow.png").getImage(); // loading image as an icon
+        Image arrowIcon = new ImageIcon("./cb/assets/arrow.png").getImage(); // loading image as an icon
         // ------------------------------------------------
         ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25, Image.SCALE_FAST));
         // JPanel aiButtonPlay = new JPanel(new FlowLayout());
