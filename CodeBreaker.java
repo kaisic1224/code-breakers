@@ -23,7 +23,8 @@ public class CodeBreaker {
             System.out.println("Menu:");
             System.out.println("   1. play against an AI as a code breaker");
             System.out.println("   2. play against an AI as a code setter");
-            System.out.println("   3. exit game");
+            System.out.println("   3. test all combinations");
+            System.out.println("   4. Leave");
 
             int userInput = Integer.parseInt(scan.nextLine());
 
@@ -32,7 +33,8 @@ public class CodeBreaker {
             } else if (userInput == 2) {
                 playerIsCodeSetter();
             } else if (userInput == 3) {
-                System.out.println("bye bye! :)");
+                selfTest();
+            } else {
                 quitGame = true;
             }
 
@@ -54,7 +56,7 @@ public class CodeBreaker {
 
             String[] userGuess = scan.nextLine().split(" ");
             String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
-            
+
             // where 1 = black and 0 = white;
             int[] pegHolder = board.returnPegs(feedBack);
 
@@ -76,6 +78,7 @@ public class CodeBreaker {
     }
 
     public static void playerIsCodeSetter() {
+
         AICodeBreaker AI = new AICodeBreaker(board.getSize());
         AI.generateAllCombos(board.getSize());
 
@@ -105,4 +108,40 @@ public class CodeBreaker {
 
     }
 
+    public static void selfTest() {
+        AICodeBreaker AI = new AICodeBreaker(board.getSize());
+        AI.generateAllCombos(board.getSize());
+
+        ArrayList<String[]> allCombos = AI.getCombos();
+
+        for (int i = 0; i < allCombos.size(); i++) {
+
+            int attempts = 1;
+            int blacks = -1;
+            int whites = -1;
+
+            do {
+                String[] code = AI.playGuess(blacks, whites);
+
+                String[] feedback = board.checkGuess(code, allCombos.get(i), 0);
+                int[] temp = board.returnPegs(feedback);
+                if (temp[1] == board.getSize()) {
+                    break;
+                }
+                whites = temp[0];
+
+                attempts++;
+
+            } while (attempts <= 10);
+
+            String combination = "";
+
+            for (int j = 0; j < allCombos.get(i).length; j++) {
+                combination += allCombos.get(i)[j];
+            }
+            System.out.println("Attempts: " + attempts + " Combination: " + combination);
+
+        }
+
+    }
 }

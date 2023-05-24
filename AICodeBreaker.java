@@ -25,6 +25,10 @@ public class AICodeBreaker {
 
     }
 
+    ArrayList<String[]> getCombos() {
+        return remainingCombos;
+    }
+
     String[] playGuess(int black, int white) {
 
         if (black == -1 && white == -1) {
