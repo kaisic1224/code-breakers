@@ -72,7 +72,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
             Color c = null;
             try {
                 c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
-                System.out.println(Colour.values()[i].toString().toUpperCase());
                 peg.setBackground(c);
             } catch (Exception e) {
                 e.printStackTrace();
