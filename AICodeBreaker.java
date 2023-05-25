@@ -3,7 +3,7 @@ import java.util.*;
 public class AICodeBreaker {
 
     Board board;
-    String[] firstGuess = { "B", "B", "R", "R" };
+    String[] firstGuess = { "B", "Y", "O", "P" };
     String[] lastGuess; // the most recent guess guessed
 
     String[][] remainingCombos;
@@ -29,15 +29,15 @@ public class AICodeBreaker {
         return remainingCombos;
     }
 
-    String[] playGuess(int black, int white) {
+    String[] guessCombo(int black, int white) {
 
+        // it's the first guess
         if (black == -1 && white == -1) {
-            // it's the first guess
+
             lastGuess = firstGuess.clone();
             return firstGuess;
         }
 
-        // wikipedia mastermind algorithm step 5. this works perfectly
         int counter = 0;
 
         for (int i = 0; i < remainingCombos.length; i++) {
@@ -62,8 +62,40 @@ public class AICodeBreaker {
 
         }
 
-        lastGuess = remainingCombos[counter];
+        lastGuess = remainingCombos[scoreCombos()];
         return lastGuess;
+
+        // ADD MINIMAX GUESSING -> UNDER 5 GUESS ALGORITHM
+    }
+
+    public int scoreCombos() {
+        int highScore = -1;
+        int index = 0;
+
+        for (int i = 0; i < remainingCombos.length; i++) {
+            int impactScore = 0;
+
+            if (remainingCombos[i] != null) {
+                for (int j = 0; j < remainingCombos.length; j++) {
+
+                    if (remainingCombos[j] != null) {
+                        String[] feedback = board.checkGuess(remainingCombos[i], remainingCombos[j], 0);
+                        int[] pegHolder = board.returnPegs(feedback);
+
+                        impactScore += pegHolder[1];
+                        impactScore += pegHolder[0];
+                    }
+
+                }
+
+                if (impactScore > highScore) {
+                    impactScore = highScore;
+                    index = i;
+                }
+            }
+        }
+
+        return index;
     }
 
     public void generateAllCombos(int numPositions) {

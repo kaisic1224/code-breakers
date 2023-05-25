@@ -88,7 +88,7 @@ public class CodeBreaker {
         int whites = -1;
 
         do {
-            String[] code = AI.playGuess(blacks, whites);
+            String[] code = AI.guessCombo(blacks, whites);
 
             System.out.println("Remaining Combos:");
             AI.printRemainingCombos(board.getSize());
@@ -111,6 +111,9 @@ public class CodeBreaker {
     }
 
     public static void selfTest() {
+
+        ArrayList<String> baddies = new ArrayList<String>();
+
         System.out.println("SELF TEST -------------------------");
 
         AICodeBreaker AI = new AICodeBreaker(board.getSize());
@@ -119,6 +122,9 @@ public class CodeBreaker {
         long startTime = System.nanoTime();
 
         int totalAttempts = 0;
+        int[] attemptsArray = new int[AI.remainingCombos.length];
+        int[] attemptsSort = new int[7];
+
         for (int i = 0; i < AI.allCombos.length; i++) {
 
             AI.remainingCombos = AI.allCombos.clone();
@@ -128,7 +134,7 @@ public class CodeBreaker {
             int whites = -1;
 
             do {
-                String[] code = AI.playGuess(blacks, whites);
+                String[] code = AI.guessCombo(blacks, whites);
                 String[] feedback = board.checkGuess(code, AI.allCombos[i], 0);
                 int[] pegHolder = board.returnPegs(feedback);
                 blacks = pegHolder[1];
@@ -143,7 +149,9 @@ public class CodeBreaker {
             } while (true);
 
             totalAttempts += attempts;
-            System.out.println("Attempts: " + attempts);
+            System.out.println("ATTEMPTS: " + attempts);
+
+            attemptsArray[i] = attempts;
         }
 
         long endTime = System.nanoTime();
@@ -155,6 +163,39 @@ public class CodeBreaker {
         System.out.println(
                 "TOTAL: " + totalAttempts + " AVERAGE: " + avg + " TIME: " + totalTime);
 
+        int worstCase = 0;
+
+        for (int i = 0; i < attemptsArray.length; i++) {
+            if (attemptsArray[i] == 1) {
+                attemptsSort[0]++;
+            } else if (attemptsArray[i] == 2) {
+                attemptsSort[1]++;
+            } else if (attemptsArray[i] == 3) {
+                attemptsSort[2]++;
+            } else if (attemptsArray[i] == 4) {
+                attemptsSort[3]++;
+            } else if (attemptsArray[i] == 5) {
+                attemptsSort[4]++;
+            } else if (attemptsArray[i] == 6) {
+                attemptsSort[5]++;
+            } else if (attemptsArray[i] > 6) {
+                attemptsSort[6]++;
+
+                if (attemptsArray[i] > worstCase) {
+                    worstCase = attemptsArray[i];
+                }
+
+            }
+        }
+
+        System.out.println("1 ATTEMPT: " + attemptsSort[0]);
+        System.out.println("2 ATTEMPT: " + attemptsSort[1]);
+        System.out.println("3 ATTEMPT: " + attemptsSort[2]);
+        System.out.println("4 ATTEMPT: " + attemptsSort[3]);
+        System.out.println("5 ATTEMPT: " + attemptsSort[4]);
+        System.out.println("6 ATTEMPT: " + attemptsSort[5]);
+        System.out.println("7+ ATTEMPT: " + attemptsSort[6]);
+        System.out.println("WORST CASE: " + worstCase);
     }
 
     public static void printArray(String[] array) {
