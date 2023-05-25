@@ -37,7 +37,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static void Game(JFrame frame) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
-        ArrayList<JLabel> playerCode = new ArrayList<JLabel>();
+        ArrayList<JButton> playerCode = new ArrayList<JButton>();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         JPanel boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
@@ -64,11 +64,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
         mainPanel.add(boardPanel);
         mainPanel.add(guessPanel);
 
+        JPanel guess = new JPanel(new FlowLayout());
         JPanel colourPicker = new JPanel(new FlowLayout());
-        // Graphics g = colourPicker.getGraphics();
-        // g.fillOval(20, 20, 10, 10);
+        JButton clearAll = new JButton("Clear all");
+        JButton submit = new JButton("Submit");
+        clearAll.setEnabled(false);
         for (int i = 0; i < Colour.values().length; i++) {
-            JLabel peg = new JLabel("");
+            JButton peg = new JButton("");
             peg.setPreferredSize(new Dimension(50, 50));
             peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             peg.setOpaque(true);
@@ -80,37 +82,44 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 e.printStackTrace();
             }
 
-            peg.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    // Handle the mouse click event
-                    System.out.println("heheh");
+            peg.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (playerCode.size() == 4)
+                        return;
                     playerCode.add(peg);
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    // Handle the mouse press event
-                }
-            
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    // Handle the mouse release event
-                }
-            
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    // Handle the mouse enter event
-                }
-            
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    // Handle the mouse exit event
+                    JLabel code = new JLabel("");
+                    code.setPreferredSize(new Dimension(50, 50));
+                    code.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    code.setOpaque(true);
+                    code.setBackground(peg.getBackground());
+                    guess.add(code);
+                    guess.revalidate();
+                    guess.repaint();
+                    if (playerCode.size() == 4) {
+                        clearAll.setEnabled(true);
+                    }
                 }
             });
-
             colourPicker.add(peg);
         }
+
+        clearAll.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                playerCode.clear();
+                clearAll.setEnabled(false);
+                guess.removeAll();
+                guess.revalidate();
+                guess.repaint();
+            }
+        });
+        colourPicker.add(clearAll);
+
+        submit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                guess.removeAll();
+            }
+        });
+
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
@@ -121,6 +130,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         c.gridy = 1;
         frame.add(colourPicker, c);
+
+        c.gridy = 2;
+        frame.add(guess, c);
 
         frame.setVisible(true);
     }
