@@ -1,4 +1,5 @@
 package cb;
+
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -9,6 +10,8 @@ import cb.Board.Colour;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class CodeBreaker extends JFrame implements ActionListener {
     final String fontColour = "#374151";
@@ -34,6 +37,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static void Game(JFrame frame) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
+        ArrayList<JLabel> playerCode = new ArrayList<JLabel>();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         JPanel boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
@@ -60,7 +64,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         mainPanel.add(boardPanel);
         mainPanel.add(guessPanel);
 
-
         JPanel colourPicker = new JPanel(new FlowLayout());
         // Graphics g = colourPicker.getGraphics();
         // g.fillOval(20, 20, 10, 10);
@@ -76,9 +79,38 @@ public class CodeBreaker extends JFrame implements ActionListener {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            peg.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    // Handle the mouse click event
+                    System.out.println("heheh");
+                    playerCode.add(peg);
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    // Handle the mouse press event
+                }
+            
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    // Handle the mouse release event
+                }
+            
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    // Handle the mouse enter event
+                }
+            
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    // Handle the mouse exit event
+                }
+            });
+
             colourPicker.add(peg);
         }
-            
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
@@ -242,7 +274,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     }
 
-
     public static void saveToFile(String[] record, String accountName) throws IOException {
         PrintWriter aw = new PrintWriter(new FileWriter("./accounts/" + accountName + ".txt", true));
 
@@ -251,7 +282,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         aw.close();
     }
 
-    public static String getRecord(String[] accountName) throws IOException{
+    public static String getRecord(String[] accountName) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader("./accounts/" + accountName + ".txt"));
 
         String line = br.readLine();
