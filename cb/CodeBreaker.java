@@ -10,6 +10,8 @@ import cb.Board.Colour;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class CodeBreaker extends JFrame implements ActionListener {
     final String fontColour = "#374151";
@@ -44,6 +46,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static void Game(JFrame frame, boolean isCodeBreaker) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
+        ArrayList<JButton> playerCode = new ArrayList<JButton>();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
@@ -182,6 +185,62 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             colourPicker.add(submitSelection);
         }
+        mainPanel.add(feedbackPanel);
+
+        JPanel guess = new JPanel(new FlowLayout());
+        JButton clearAll = new JButton("Clear all");
+        JButton submit = new JButton("Submit");
+        clearAll.setEnabled(false);
+        for (int i = 0; i < Colour.values().length; i++) {
+            JButton peg = new JButton("");
+            peg.setPreferredSize(new Dimension(50, 50));
+            peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            peg.setOpaque(true);
+            Color c = null;
+            try {
+                c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
+                peg.setBackground(c);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            peg.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (playerCode.size() == 4)
+                        return;
+                    playerCode.add(peg);
+                    JLabel code = new JLabel("");
+                    code.setPreferredSize(new Dimension(50, 50));
+                    code.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    code.setOpaque(true);
+                    code.setBackground(peg.getBackground());
+                    guess.add(code);
+                    guess.revalidate();
+                    guess.repaint();
+                    if (playerCode.size() == 4) {
+                        clearAll.setEnabled(true);
+                    }
+                }
+            });
+            colourPicker.add(peg);
+        }
+
+        clearAll.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                playerCode.clear();
+                clearAll.setEnabled(false);
+                guess.removeAll();
+                guess.revalidate();
+                guess.repaint();
+            }
+        });
+        colourPicker.add(clearAll);
+
+        submit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                guess.removeAll();
+            }
+        });
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
@@ -195,6 +254,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         c.gridy = 2;
         frame.add(displayColours, c);
+        frame.add(guess, c);
 
         frame.setVisible(true);
     }
