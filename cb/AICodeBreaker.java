@@ -1,23 +1,15 @@
 package cb;
+
 import java.util.*;
 import cb.Board.Colour;
 
 public class AICodeBreaker {
 
     Board board;
-    String[] firstGuess = { "B", "B", "R", "R" };
+    String[] firstGuess = { "BLUE", "BLUE", "RED", "RED" };
     String[] lastGuess; // the most recent guess guessed
 
     ArrayList<String[]> remainingCombos = new ArrayList<String[]>();
-    // FIGURE OUT HOW TO USE ENUM
-    // final String[] COLOURS = {
-    //         "B",
-    //         "Y",
-    //         "O",
-    //         "R",
-    //         "P",
-    //         "G",
-    // };
 
     // CONSTRUCTOR
     public AICodeBreaker(int numPositions) {
@@ -46,7 +38,7 @@ public class AICodeBreaker {
 
             if (temp[1] != black || temp[0] != white) {
 
-                System.out.println("whites " + temp[0] + " blacks: " + temp[1] + " | ");
+                // System.out.println("whites " + temp[0] + " blacks: " + temp[1] + " | ");
                 remainingCombos.remove(i);
 
             } else if (counter == 0) {

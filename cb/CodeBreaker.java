@@ -1,4 +1,5 @@
 package cb;
+
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -20,6 +21,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
     static Font ForeverFontBold = null;
     static Scanner scan; // is this allowed????
 
+    static Color[] feedbackColours = { Color.black, Color.white };
+    static int numColoursSelected = 0;
+    static String[] playerFeedback = new String[4];
+    static int attempts = 0;
+    static AICodeBreaker AI;
+
+    public static JPanel boardPanel;
+    public static JPanel feedbackPanel;
+
     public static void LoadAssets() {
         Font ForeverFont = null;
         try {
@@ -31,14 +41,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
     }
 
     // will use current object inside Board instance variable to render board
-    public static void Game(JFrame frame) {
+    public static void Game(JFrame frame, boolean isCodeBreaker) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        JPanel boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
+        boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
         boardPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
-        JPanel guessPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
+        feedbackPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
+
         for (int i = 0; i < board.getTries(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
                 JLabel cell = new JLabel("");
@@ -53,32 +64,124 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 JLabel cell = new JLabel();
                 cell.setPreferredSize(new Dimension(50, 50));
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                guessPanel.add(cell);
+                feedbackPanel.add(cell);
             }
         }
 
         mainPanel.add(boardPanel);
-        mainPanel.add(guessPanel);
-
+        mainPanel.add(feedbackPanel);
 
         JPanel colourPicker = new JPanel(new FlowLayout());
+        JPanel displayColours = new JPanel(new FlowLayout());
         // Graphics g = colourPicker.getGraphics();
         // g.fillOval(20, 20, 10, 10);
-        for (int i = 0; i < Colour.values().length; i++) {
-            JLabel peg = new JLabel("");
-            peg.setPreferredSize(new Dimension(50, 50));
-            peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            peg.setOpaque(true);
-            Color c = null;
-            try {
-                c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
-                peg.setBackground(c);
-            } catch (Exception e) {
-                e.printStackTrace();
+
+        if (isCodeBreaker) {
+            for (int i = 0; i < Colour.values().length; i++) {
+                JButton peg = new JButton("");
+                peg.setPreferredSize(new Dimension(50, 50));
+                peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                peg.setOpaque(true);
+                Color c = null;
+                try {
+                    c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
+                    peg.setBackground(c);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                colourPicker.add(peg);
             }
-            colourPicker.add(peg);
+        } else {
+            AI = new AICodeBreaker(board.getSize());
+
+            for (int i = 0; i < 2; i++) {
+
+                JButton feedback = new JButton("");
+                feedback.setPreferredSize(new Dimension(50, 50));
+                feedback.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                feedback.setOpaque(true);
+                feedback.setBackground(feedbackColours[i]);
+
+                feedback.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+
+                        if (numColoursSelected < 4) {
+                            JLabel selectedColour = new JLabel("");
+                            selectedColour.setPreferredSize(new Dimension(30, 30));
+                            selectedColour.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                            selectedColour.setOpaque(true);
+                            selectedColour.setBackground(feedback.getBackground());
+                            displayColours.add(selectedColour);
+
+                            boardPanel.revalidate();
+                            boardPanel.repaint();
+
+                            playerFeedback[numColoursSelected] = feedback.getBackground().toString();
+
+                            numColoursSelected++;
+                        }
+
+                    }
+                });
+
+                colourPicker.add(feedback);
+            }
+
+            JButton clearSelection = new JButton("Clear");
+            clearSelection.setPreferredSize(new Dimension(75, 20));
+            clearSelection.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    displayColours.removeAll();
+                    displayColours.revalidate();
+                    displayColours.repaint();
+                    numColoursSelected = 0;
+                }
+
+            });
+
+            colourPicker.add(clearSelection);
+
+            JButton submitSelection = new JButton("Submit");
+            submitSelection.setPreferredSize(new Dimension(75, 20));
+            submitSelection.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    if (numColoursSelected == 4) {
+                        displayColours.removeAll();
+                        displayColours.revalidate();
+                        displayColours.repaint();
+                        numColoursSelected = 0;
+
+                        // use clone or else when we assign as PBR!
+                        board.feedback[board.getTries() - 1 - attempts] = playerFeedback.clone();
+
+                        revalidatFeedback();
+
+                        int blacks = 0;
+                        int whites = 0;
+
+                        for (int i = 0; i < playerFeedback.length; i++) {
+                            if (feedbackColours[0].toString().equals(playerFeedback[i])) {
+                                blacks++;
+                            } else {
+                                whites++;
+                            }
+                        }
+
+                        attempts++;
+                        playerIsCodeSetter(blacks, whites);
+
+                    }
+
+                }
+
+            });
+
+            colourPicker.add(submitSelection);
         }
-            
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
@@ -89,6 +192,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         c.gridy = 1;
         frame.add(colourPicker, c);
+
+        c.gridy = 2;
+        frame.add(displayColours, c);
 
         frame.setVisible(true);
     }
@@ -124,15 +230,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // ------------------------------------------------
         ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25, Image.SCALE_FAST));
         // JPanel aiButtonPlay = new JPanel(new FlowLayout());
-        JButton aiPlay = new JButton("JACKIE CHAN", arrowImg);
+        JButton aiPlay = new JButton("CODE BREAKER", arrowImg);
         aiPlay.setFont(ForeverFontBold);
         aiPlay.setHorizontalTextPosition(JButton.LEFT);
         aiPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFrame gameFrame = new JFrame("Code Breakers | Game");
+                JFrame gameFrame = new JFrame("Code Breakers | Player is code breaker");
                 // playerIsCodeSetter(); fix later
                 board = new Board();
-                Game(gameFrame);
+                Game(gameFrame, true);
                 setVisible(false);
             }
         });
@@ -141,9 +247,18 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // aiButtonPlay.add(arrowImg);
         // ------------------------------------------------
         // JPanel personButtonPlay = new JPanel(new FlowLayout());
-        JButton personPlay = new JButton("JACKIE BLACK", arrowImg);
+        JButton personPlay = new JButton("CODE SETTER", arrowImg);
         personPlay.setFont(ForeverFontBold);
         personPlay.setHorizontalTextPosition(JButton.LEFT);
+        personPlay.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFrame gameFrame = new JFrame("Code Breakers | Player is code setter");
+                board = new Board();
+                Game(gameFrame, false);
+                playerIsCodeSetter(-1, -1);
+                setVisible(false);
+            }
+        });
 
         // personButtonPlay.add(personPlay);
         // personButtonPlay.add(arrowImg2);
@@ -211,37 +326,80 @@ public class CodeBreaker extends JFrame implements ActionListener {
         } while (!finishedGame);
     }
 
-    public static void playerIsCodeSetter() {
-        board = new Board();
-        AICodeBreaker AI = new AICodeBreaker(board.getSize());
-        AI.generateAllCombos(board.getSize());
+    public static void playerIsCodeSetter(int blacks, int whites) {
 
-        int blacks = -1;
-        int whites = -1;
+        if (blacks == board.getSize()) {
+            System.out.println("YAZERS");
+        } else {
+            AI.generateAllCombos(board.getSize());
 
-        do {
             String[] code = AI.playGuess(blacks, whites);
-
-            System.out.println("Remaining Combos:");
-            AI.printRemainingCombos(board.getSize());
-            System.out.println("Guessing:");
-            for (int i = 0; i < code.length; i++) {
-                System.out.print(code[i]);
-            }
-            System.out.println(" ");
-
-            // get black and white peg counts
-            System.out.println("How many black pegs?");
-            blacks = Integer.parseInt(scan.nextLine());
-            if (blacks == board.getSize()) {
-                break;
-            }
-            System.out.println("How many white pegs?");
-            whites = Integer.parseInt(scan.nextLine());
-        } while (true);
+            board.board[board.getTries() - 1 - attempts] = code;
+            revalidatBoard();
+        }
 
     }
 
+    public static void revalidatBoard() {
+        boardPanel.removeAll();
+
+        for (int i = 0; i < board.getTries(); i++) {
+            for (int j = 0; j < board.getSize(); j++) {
+                String colourName = board.board[i][j];
+
+                JLabel cell = new JLabel("");
+                cell.setPreferredSize(new Dimension(50, 50));
+                cell.setBorder(BorderFactory.createLineBorder(Color.black));
+                cell.setOpaque(true);
+
+                Color c = null;
+
+                for (int k = 0; k < Colour.values().length; k++) {
+                    if (Colour.values()[k].toString().equals(colourName)) {
+                        try {
+                            c = (Color) Color.class.getField(Colour.values()[k].toString().toUpperCase()).get(null);
+                            cell.setBackground(c);
+                            break;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                boardPanel.add(cell);
+            }
+        }
+
+        boardPanel.revalidate();
+        boardPanel.repaint();
+
+    }
+
+    public static void revalidatFeedback() {
+        feedbackPanel.removeAll();
+
+        for (int i = 0; i < board.getTries(); i++) {
+            for (int j = 0; j < board.getSize(); j++) {
+                String colourName = board.feedback[i][j];
+                JLabel cell = new JLabel("");
+                cell.setPreferredSize(new Dimension(50, 50));
+                cell.setBorder(BorderFactory.createLineBorder(Color.black));
+                cell.setOpaque(true);
+
+                for (int k = 0; k < feedbackColours.length; k++) {
+                    if (feedbackColours[k].toString().equals(colourName)) {
+                        cell.setBackground(feedbackColours[k]);
+                    }
+                }
+
+                feedbackPanel.add(cell);
+            }
+        }
+
+        feedbackPanel.revalidate();
+        feedbackPanel.repaint();
+
+    }
 
     public static void saveToFile(String[] record, String accountName) throws IOException {
         PrintWriter aw = new PrintWriter(new FileWriter("./accounts/" + accountName + ".txt", true));
@@ -251,7 +409,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         aw.close();
     }
 
-    public static String getRecord(String[] accountName) throws IOException{
+    public static String getRecord(String[] accountName) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader("./accounts/" + accountName + ".txt"));
 
         String line = br.readLine();

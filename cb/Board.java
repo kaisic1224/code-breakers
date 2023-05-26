@@ -1,10 +1,11 @@
 package cb;
+
 import java.util.ArrayList;
 
 public class Board {
-    private String[][] board;
-    private String[][] guesses;
-    private String[] code;
+    public String[][] board;
+    public String[][] feedback;
+    public String[] code;
     private final int VALID_CHARS = 6;
     private final int SIZE = 4;
     private final int TRIES = 10;
@@ -20,7 +21,7 @@ public class Board {
 
     public Board() {
         board = new String[TRIES][SIZE];
-        guesses = new String[TRIES][SIZE];
+        feedback = new String[TRIES][SIZE];
         code = new String[SIZE];
     }
 
@@ -52,7 +53,7 @@ public class Board {
     }
 
     // THERE IS SOMETHING WRONG HERE
-    // hours wasted starting now: 1
+    // hours wasted starting now: 1.5
     public String[] checkGuess(String[] guess, String[] solution, int turn) {
         String[] temporaryCode = solution.clone();
         String[] evaluation = new String[solution.length];
@@ -83,9 +84,6 @@ public class Board {
             }
 
         }
-
-        board[turn] = guess;
-        guesses[turn] = evaluation;
 
         // remove all nulls
         ArrayList<String> fb = new ArrayList<String>();
