@@ -193,32 +193,33 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
                 public void actionPerformed(ActionEvent e) {
 
-                    if (numColoursSelected == 4) {
-                        displayColours.removeAll();
-                        displayColours.revalidate();
-                        displayColours.repaint();
-                        numColoursSelected = 0;
+                    displayColours.removeAll();
+                    displayColours.revalidate();
+                    displayColours.repaint();
+                    numColoursSelected = 0;
 
-                        // use clone or else when we assign as PBR!
-                        board.feedback[board.getTries() - 1 - attempts] = playerFeedback.clone();
+                    // use clone or else when we assign as PBR!
+                    board.feedback[board.getTries() - 1 - attempts] = playerFeedback.clone();
 
-                        revalidatFeedback();
+                    revalidatFeedback();
 
-                        int blacks = 0;
-                        int whites = 0;
+                    int blacks = 0;
+                    int whites = 0;
 
-                        for (int i = 0; i < playerFeedback.length; i++) {
+                    for (int i = 0; i < playerFeedback.length; i++) {
+                        if (playerFeedback[i] != null) {
                             if (feedbackColours[0].toString().equals(playerFeedback[i])) {
                                 blacks++;
                             } else {
                                 whites++;
                             }
+
+                            playerFeedback[i] = null;
                         }
-
-                        attempts++;
-                        playerIsCodeSetter(blacks, whites);
-
                     }
+
+                    attempts++;
+                    playerIsCodeSetter(blacks, whites);
 
                 }
 
@@ -321,6 +322,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         add(mainPanel);
         pack();
         setVisible(true);
+
     }
 
     public static void main(String[] args) {
@@ -330,7 +332,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         scan = new Scanner(System.in);
 
         new CodeBreaker();
-
+        selfTest();
     }
 
     public static void playerIsCodeBreaker() {
@@ -377,7 +379,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         } else {
             AI.generateAllCombos(board.getSize());
 
-            String[] code = AI.playGuess(blacks, whites);
+            String[] code = AI.guessCombo(blacks, whites);
             board.board[board.getTries() - 1 - attempts] = code;
             revalidatBoard();
         }
@@ -472,4 +474,91 @@ public class CodeBreaker extends JFrame implements ActionListener {
         throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
+    public static void selfTest() {
+
+        Board board = new Board();
+        System.out.println("SELF TEST -------------------------");
+
+        AICodeBreaker AI = new AICodeBreaker(board.getSize());
+        AI.generateAllCombos(board.getSize());
+        AI.printRemainingCombos(board.getSize());
+
+        long startTime = System.nanoTime();
+
+        int totalAttempts = 0;
+        int[] attemptsArray = new int[AI.remainingCombos.length];
+        int[] attemptsSort = new int[7];
+
+        for (int i = 0; i < AI.allCombos.length; i++) {
+
+            AI.remainingCombos = AI.allCombos.clone();
+
+            int attempts = 1;
+            int blacks = -1;
+            int whites = -1;
+
+            do {
+                String[] code = AI.guessCombo(blacks, whites);
+                String[] feedback = board.checkGuess(code, AI.allCombos[i], 0);
+                int[] pegHolder = board.returnPegs(feedback);
+                blacks = pegHolder[1];
+                whites = pegHolder[0];
+
+                if (blacks == board.getSize()) {
+                    break;
+                }
+
+                attempts++;
+
+            } while (true);
+
+            totalAttempts += attempts;
+            System.out.println("ATTEMPTS: " + attempts);
+
+            attemptsArray[i] = attempts;
+        }
+
+        long endTime = System.nanoTime();
+        long totalTime = endTime - startTime;
+
+        // STANDARD PEROFRAMNCE TOTAL: 6455 AVERAGE: 4.98071 TIME: 1718856000 (nano
+        // secs)
+        float avg = totalAttempts / 1296f;
+        System.out.println(
+                "TOTAL: " + totalAttempts + " AVERAGE: " + avg + " TIME: " + totalTime);
+
+        int worstCase = 0;
+
+        for (int i = 0; i < attemptsArray.length; i++) {
+            if (attemptsArray[i] == 1) {
+                attemptsSort[0]++;
+            } else if (attemptsArray[i] == 2) {
+                attemptsSort[1]++;
+            } else if (attemptsArray[i] == 3) {
+                attemptsSort[2]++;
+            } else if (attemptsArray[i] == 4) {
+                attemptsSort[3]++;
+            } else if (attemptsArray[i] == 5) {
+                attemptsSort[4]++;
+            } else if (attemptsArray[i] == 6) {
+                attemptsSort[5]++;
+            } else if (attemptsArray[i] > 6) {
+                attemptsSort[6]++;
+
+                if (attemptsArray[i] > worstCase) {
+                    worstCase = attemptsArray[i];
+                }
+
+            }
+        }
+
+        System.out.println("1 ATTEMPT: " + attemptsSort[0]);
+        System.out.println("2 ATTEMPT: " + attemptsSort[1]);
+        System.out.println("3 ATTEMPT: " + attemptsSort[2]);
+        System.out.println("4 ATTEMPT: " + attemptsSort[3]);
+        System.out.println("5 ATTEMPT: " + attemptsSort[4]);
+        System.out.println("6 ATTEMPT: " + attemptsSort[5]);
+        System.out.println("7+ ATTEMPT: " + attemptsSort[6]);
+        System.out.println("WORST CASE: " + worstCase);
+    }
 }
