@@ -80,6 +80,10 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // g.fillOval(20, 20, 10, 10);
 
         if (isCodeBreaker) {
+
+            JButton clearAll = new JButton("Clear all");
+            JButton submit = new JButton("Submit");
+            clearAll.setEnabled(false);
             for (int i = 0; i < Colour.values().length; i++) {
                 JButton peg = new JButton("");
                 peg.setPreferredSize(new Dimension(50, 50));
@@ -92,8 +96,45 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                peg.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (playerCode.size() == 4)
+                            return;
+                        playerCode.add(peg);
+                        JLabel code = new JLabel("");
+                        code.setPreferredSize(new Dimension(50, 50));
+                        code.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        code.setOpaque(true);
+                        code.setBackground(peg.getBackground());
+                        displayColours.add(code);
+                        displayColours.revalidate();
+                        displayColours.repaint();
+                        if (playerCode.size() == 4) {
+                            clearAll.setEnabled(true);
+                        }
+                    }
+                });
                 colourPicker.add(peg);
             }
+
+            clearAll.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    playerCode.clear();
+                    clearAll.setEnabled(false);
+                    displayColours.removeAll();
+                    displayColours.revalidate();
+                    displayColours.repaint();
+                }
+            });
+            colourPicker.add(clearAll);
+
+            submit.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    displayColours.removeAll();
+                }
+            });
+
         } else {
             AI = new AICodeBreaker(board.getSize());
 
@@ -187,61 +228,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         }
         mainPanel.add(feedbackPanel);
 
-        JPanel guess = new JPanel(new FlowLayout());
-        JButton clearAll = new JButton("Clear all");
-        JButton submit = new JButton("Submit");
-        clearAll.setEnabled(false);
-        for (int i = 0; i < Colour.values().length; i++) {
-            JButton peg = new JButton("");
-            peg.setPreferredSize(new Dimension(50, 50));
-            peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            peg.setOpaque(true);
-            Color c = null;
-            try {
-                c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
-                peg.setBackground(c);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            peg.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (playerCode.size() == 4)
-                        return;
-                    playerCode.add(peg);
-                    JLabel code = new JLabel("");
-                    code.setPreferredSize(new Dimension(50, 50));
-                    code.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                    code.setOpaque(true);
-                    code.setBackground(peg.getBackground());
-                    guess.add(code);
-                    guess.revalidate();
-                    guess.repaint();
-                    if (playerCode.size() == 4) {
-                        clearAll.setEnabled(true);
-                    }
-                }
-            });
-            colourPicker.add(peg);
-        }
-
-        clearAll.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                playerCode.clear();
-                clearAll.setEnabled(false);
-                guess.removeAll();
-                guess.revalidate();
-                guess.repaint();
-            }
-        });
-        colourPicker.add(clearAll);
-
-        submit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                guess.removeAll();
-            }
-        });
-
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
         c.fill = GridBagConstraints.HORIZONTAL; // fill in width
@@ -254,8 +240,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         c.gridy = 2;
         frame.add(displayColours, c);
-        frame.add(guess, c);
-
         frame.setVisible(true);
     }
 
