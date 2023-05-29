@@ -27,6 +27,7 @@ public class AICodeBreaker {
         return remainingCombos;
     }
 
+    // OITS NOT WORKEEY
     String[] guessCombo(int black, int white) {
 
         // it's the first guess
@@ -60,11 +61,6 @@ public class AICodeBreaker {
         }
 
         lastGuess = miniMax().clone();
-
-        for (int k = 0; k < lastGuess.length; k++) {
-            System.out.print(lastGuess[k]);
-        }
-        System.out.println();
 
         return lastGuess;
     }
