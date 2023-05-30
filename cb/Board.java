@@ -1,4 +1,6 @@
 package cb;
+
+import java.awt.Color;
 import java.util.ArrayList;
 
 public class Board {
@@ -112,6 +114,27 @@ public class Board {
         }
 
         return pegHolder;
+
+    }
+
+    // hours wasted starting now: 1 - solved
+    public String colourToString(Color c) {
+        switch (c.toString()) {
+            case "java.awt.Color[r=0,g=255,b=0]":
+                return "GREEN";
+            case "java.awt.Color[r=255,g=255,b=0]":
+                return "YELLOW";
+            case "java.awt.Color[r=0,g=0,b=255]":
+                return "BLUE";
+            case "java.awt.Color[r=255,g=200,b=0]":
+                return "ORANGE";
+            case "java.awt.Color[r=255,g=0,b=0]":
+                return "RED";
+            case "java.awt.Color[r=255,g=175,b=175]":
+                return "PINK";
+            default:
+                return "IDK WHAT ";
+        }
 
     }
 
