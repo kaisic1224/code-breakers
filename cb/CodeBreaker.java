@@ -3,22 +3,17 @@ package cb;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import cb.Board.Colour;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 public class CodeBreaker extends JFrame implements ActionListener {
     final String fontColour = "#374151";
     final String backgroundColour = "#FFBE79";
     private static Board board;
-    private boolean pvp;
-    private int turn;
 
     static Font ForeverFontBold = null;
     static Scanner scan; // is this allowed????
@@ -113,13 +108,27 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         });
         colourPicker.add(clearAll);
+        colourPicker.add(submit);
 
+        int turn = 0;
         submit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                Component[] guessColours = guess.getComponents();
+                String[] colors = new String[4];
+
+                for (int i = 0; i < guessColours.length; i++) {
+                    colors[i] = board.colourToString(guessColours[i].getBackground());
+                }
+
+                board.checkGuess(colors, board.getCode(), turn);
+                boardPanel.revalidate();
+                boardPanel.repaint();
+
                 guess.removeAll();
+                guess.revalidate();
+                guess.repaint();
             }
         });
-
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
@@ -168,7 +177,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // ------------------------------------------------
         ImageIcon arrowImg = new ImageIcon(arrowIcon.getScaledInstance(25, 25, Image.SCALE_FAST));
         // JPanel aiButtonPlay = new JPanel(new FlowLayout());
-        JButton aiPlay = new JButton("JACKIE CHAN", arrowImg);
+        JButton aiPlay = new JButton("CODE BREAKER", arrowImg);
         aiPlay.setFont(ForeverFontBold);
         aiPlay.setHorizontalTextPosition(JButton.LEFT);
         aiPlay.addActionListener(new ActionListener() {
@@ -185,7 +194,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // aiButtonPlay.add(arrowImg);
         // ------------------------------------------------
         // JPanel personButtonPlay = new JPanel(new FlowLayout());
-        JButton personPlay = new JButton("JACKIE BLACK", arrowImg);
+        JButton personPlay = new JButton("CODE SETTER", arrowImg);
         personPlay.setFont(ForeverFontBold);
         personPlay.setHorizontalTextPosition(JButton.LEFT);
 
