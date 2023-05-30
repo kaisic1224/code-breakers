@@ -332,7 +332,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         scan = new Scanner(System.in);
 
         new CodeBreaker();
-        selfTest();
+        // selfTest();
     }
 
     public static void playerIsCodeBreaker() {

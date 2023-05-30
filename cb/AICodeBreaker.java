@@ -60,7 +60,7 @@ public class AICodeBreaker {
 
         }
 
-        lastGuess = miniMax().clone();
+        lastGuess = remainingCombos[scoreCombos()];
 
         return lastGuess;
     }
