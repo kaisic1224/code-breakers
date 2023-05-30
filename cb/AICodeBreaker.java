@@ -1,123 +1,188 @@
 package cb;
+
 import java.util.*;
 import cb.Board.Colour;
 
 public class AICodeBreaker {
 
     Board board;
-    String[] firstGuess = { "B", "B", "R", "R" };
+    String[] firstGuess = { "BLUE", "YELLOW", "ORANGE", "PINK" };
     String[] lastGuess; // the most recent guess guessed
 
-    ArrayList<String[]> remainingCombos = new ArrayList<String[]>();
-    // FIGURE OUT HOW TO USE ENUM
-    // final String[] COLOURS = {
-    //         "B",
-    //         "Y",
-    //         "O",
-    //         "R",
-    //         "P",
-    //         "G",
-    // };
+    String[][] remainingCombos;
+    String[][] allCombos;
+    String[][] nonGuessedCombos;
+
+    private int numPositions;
 
     // CONSTRUCTOR
     public AICodeBreaker(int numPositions) {
+
+        this.numPositions = numPositions;
         board = new Board();
+
     }
 
-    String[] playGuess(int black, int white) {
+    String[][] getCombos() {
+        return remainingCombos;
+    }
 
+    // OITS NOT WORKEEY
+    String[] guessCombo(int black, int white) {
+
+        // it's the first guess
         if (black == -1 && white == -1) {
-            // it's the first guess
+
             lastGuess = firstGuess.clone();
             return firstGuess;
         }
 
-        // wikipedia mastermind algorithm step 5. this works perfectly
-        int counter = 0;
+        for (int i = 0; i < remainingCombos.length; i++) {
 
-        for (int i = 0; i < remainingCombos.size(); i++) {
+            if (remainingCombos[i] != null) {
 
-            if (remainingCombos.get(i).equals(lastGuess)) {
-                remainingCombos.remove(i);
+                if (remainingCombos[i].equals(lastGuess)) {
+                    remainingCombos[i] = null;
+                    nonGuessedCombos[i] = null;
+
+                } else {
+
+                    String[] feedback = board.checkGuess(lastGuess, remainingCombos[i], 0);
+                    int[] pegHolder = board.returnPegs(feedback);
+
+                    if (pegHolder[1] != black || pegHolder[0] != white) {
+
+                        remainingCombos[i] = null;
+
+                    }
+                }
             }
 
-            String[] feedback = board.checkGuess(lastGuess, remainingCombos.get(i), 0);
-            int[] temp = board.returnPegs(feedback);
+        }
 
-            if (temp[1] != black || temp[0] != white) {
+        lastGuess = remainingCombos[scoreCombos()];
 
-                System.out.println("whites " + temp[0] + " blacks: " + temp[1] + " | ");
-                remainingCombos.remove(i);
+        return lastGuess;
+    }
 
-            } else if (counter == 0) {
-                counter = i;
+    public String[] miniMax() {
+
+        int minimumEliminated = -1;
+        String[] bestGuess = new String[numPositions];
+        int[][] minMaxTable = new int[numPositions + 1][numPositions + 1];
+
+        for (int i = 0; i < nonGuessedCombos.length; i++) {
+
+            if (nonGuessedCombos[i] != null) {
+
+                // add the feedback to the minMaxTable
+                for (int j = 0; j < remainingCombos.length; j++) {
+
+                    if (remainingCombos[j] != null) {
+                        String[] feedback = board.checkGuess(remainingCombos[j], nonGuessedCombos[i], 0);
+                        int[] pegHolder = board.returnPegs(feedback);
+                        minMaxTable[pegHolder[1]][pegHolder[0]]++;
+                    }
+
+                }
+
+                // determine the max
+                int maximum = -1;
+
+                for (int k = 0; k < minMaxTable.length; k++) {
+                    for (int l = 0; l < minMaxTable[k].length; l++) {
+                        if (minMaxTable[k][l] > maximum) {
+                            maximum = minMaxTable[k][l];
+                        }
+                    }
+                }
+
+                // determine number of items left in possbile (use arraylist LOLO)
+                int validItems = 0;
+
+                for (int k = 0; k < nonGuessedCombos.length; k++) {
+                    if (nonGuessedCombos[k] != null) {
+                        validItems++;
+                    }
+                }
+
+                // get score, return best combo
+                int score = validItems - maximum;
+                if (score > minimumEliminated) {
+                    minimumEliminated = score;
+                    bestGuess = nonGuessedCombos[i];
+                }
+
+            }
+
+        }
+
+        return bestGuess;
+    }
+
+    public int scoreCombos() {
+        int highScore = -1;
+        int index = 0;
+
+        for (int i = 0; i < remainingCombos.length; i++) {
+            int impactScore = 0;
+
+            if (remainingCombos[i] != null) {
+                for (int j = 0; j < remainingCombos.length; j++) {
+
+                    if (remainingCombos[j] != null) {
+                        String[] feedback = board.checkGuess(remainingCombos[i], remainingCombos[j], 0);
+                        int[] pegHolder = board.returnPegs(feedback);
+
+                        impactScore += pegHolder[1];
+                        impactScore += pegHolder[0];
+                    }
+
+                }
+
+                if (impactScore > highScore) {
+                    impactScore = highScore;
+                    index = i;
+                }
             }
         }
 
-        lastGuess = remainingCombos.get(counter);
-        return lastGuess;
+        return index;
     }
 
     public void generateAllCombos(int numPositions) {
 
-        int[] combo = new int[numPositions];
-        int[] prevCombo = new int[numPositions];
+        remainingCombos = new String[(int) Math.pow(Colour.values().length, numPositions)][numPositions];
+        int totalCount = 0;
 
-        for (int i = 0; i < numPositions; i++) {
-            combo[i] = 0;
-        }
+        for (int i = 0; i < Colour.values().length; i++) {
+            for (int j = 0; j < Colour.values().length; j++) {
+                for (int k = 0; k < Colour.values().length; k++) {
+                    for (int l = 0; l < Colour.values().length; l++) {
 
-        remainingCombos.add(translateIntToColour(combo));
+                        remainingCombos[totalCount][0] = Colour.values()[i].toString();
+                        remainingCombos[totalCount][1] = Colour.values()[j].toString();
+                        remainingCombos[totalCount][2] = Colour.values()[k].toString();
+                        remainingCombos[totalCount][3] = Colour.values()[l].toString();
 
-        prevCombo = combo;
-
-        for (int i = 1; i < Math.pow(Colour.values().length, numPositions); i++) {
-            combo = incrementCombo(prevCombo, numPositions, Colour.values().length);
-            remainingCombos.add(translateIntToColour(combo));
-            prevCombo = combo;
-        }
-
-    }
-
-    private String[] translateIntToColour(int[] combo) {
-        String[] colour = new String[combo.length];
-        for (int i = 0; i < combo.length; i++) {
-            colour[i] = Colour.values()[combo[i]].toString();
-        }
-
-        return colour;
-    }
-
-    private int[] incrementCombo(int[] oldCombo, int numPositions, int numColours) {
-
-        int[] newCombo = oldCombo.clone();
-
-        for (int i = numPositions - 1; i >= 0; i--) {
-
-            if (newCombo[i] == numColours - 1) {
-                if (newCombo[i - 1] != numColours - 1) {
-                    newCombo[i - 1]++;
-
-                    for (int j = i; j < numPositions; j++) {
-                        newCombo[j] = 0;
+                        totalCount++;
                     }
-                    return newCombo;
                 }
-            } else {
-                newCombo[i]++;
-                return newCombo;
-            }
 
+            }
         }
-        return newCombo;
+
+        allCombos = remainingCombos.clone();
+        nonGuessedCombos = remainingCombos.clone();
     }
 
     public void printRemainingCombos(int numPositions) {
-        for (int i = 0; i < remainingCombos.size(); i++) {
+        for (int i = 0; i < remainingCombos.length; i++) {
             for (int j = 0; j < numPositions; j++) {
-                System.out.print(remainingCombos.get(i)[j] + " ");
+                System.out.print(remainingCombos[i][j] + " ");
             }
             System.out.println(" ");
         }
     }
+
 }
