@@ -60,94 +60,79 @@ public class AICodeBreaker {
 
         }
 
-        lastGuess = remainingCombos[scoreCombos()];
+        lastGuess = bestGuess();
 
         return lastGuess;
     }
 
-    public String[] miniMax() {
+    public ArrayList<String[]> miniMax() {
 
-        int minimumEliminated = -1;
-        String[] bestGuess = new String[numPositions];
-        int[][] minMaxTable = new int[numPositions + 1][numPositions + 1];
+        HashMap<int[], Integer> timesFound = new HashMap();
+        HashMap<String[], Integer> scores = new HashMap();
+        ArrayList<String[]> goodGuesses = new ArrayList<String[]>();
 
         for (int i = 0; i < nonGuessedCombos.length; i++) {
 
             if (nonGuessedCombos[i] != null) {
 
-                // add the feedback to the minMaxTable
                 for (int j = 0; j < remainingCombos.length; j++) {
 
                     if (remainingCombos[j] != null) {
                         String[] feedback = board.checkGuess(remainingCombos[j], nonGuessedCombos[i], 0);
                         int[] pegHolder = board.returnPegs(feedback);
-                        minMaxTable[pegHolder[1]][pegHolder[0]]++;
-                    }
 
-                }
-
-                // determine the max
-                int maximum = -1;
-
-                for (int k = 0; k < minMaxTable.length; k++) {
-                    for (int l = 0; l < minMaxTable[k].length; l++) {
-                        if (minMaxTable[k][l] > maximum) {
-                            maximum = minMaxTable[k][l];
+                        if (timesFound.get(pegHolder) == null) {
+                            timesFound.put(pegHolder, 0);
                         }
+
+                        timesFound.put(pegHolder, timesFound.get(pegHolder) + 1);
                     }
                 }
 
-                // determine number of items left in possbile (use arraylist LOLO)
-                int validItems = 0;
+                int maxScore = (Collections.max(timesFound.values()));
+                scores.put(nonGuessedCombos[i], maxScore);
+            }
 
-                for (int k = 0; k < nonGuessedCombos.length; k++) {
-                    if (nonGuessedCombos[k] != null) {
-                        validItems++;
-                    }
-                }
+        }
 
-                // get score, return best combo
-                int score = validItems - maximum;
-                if (score > minimumEliminated) {
-                    minimumEliminated = score;
-                    bestGuess = nonGuessedCombos[i];
+        int minScore = (Collections.min(scores.values()));
+
+        for (int i = 0; i < nonGuessedCombos.length; i++) {
+
+            if (nonGuessedCombos[i] != null) {
+
+                if (scores.get(nonGuessedCombos[i]).equals(minScore)) {
+                    goodGuesses.add(nonGuessedCombos[i]);
                 }
 
             }
 
         }
 
-        return bestGuess;
+        return goodGuesses;
     }
 
-    public int scoreCombos() {
-        int highScore = -1;
-        int index = 0;
+    public String[] bestGuess() {
+        ArrayList<String[]> goodCodes = miniMax();
+        String[] optimalGuess = getOptimalGuess(goodCodes);
 
-        for (int i = 0; i < remainingCombos.length; i++) {
-            int impactScore = 0;
+        return optimalGuess;
+    }
 
-            if (remainingCombos[i] != null) {
-                for (int j = 0; j < remainingCombos.length; j++) {
+    public String[] getOptimalGuess(ArrayList<String[]> goodCodes) {
+        for (int i = 0; i < goodCodes.size(); i++) {
 
-                    if (remainingCombos[j] != null) {
-                        String[] feedback = board.checkGuess(remainingCombos[i], remainingCombos[j], 0);
-                        int[] pegHolder = board.returnPegs(feedback);
+            for (int j = 0; j < remainingCombos.length; j++) {
 
-                        impactScore += pegHolder[1];
-                        impactScore += pegHolder[0];
-                    }
-
+                if (goodCodes.get(i).equals(remainingCombos[j])) {
+                    return remainingCombos[j];
                 }
 
-                if (impactScore > highScore) {
-                    impactScore = highScore;
-                    index = i;
-                }
             }
+
         }
 
-        return index;
+        return goodCodes.get(0);
     }
 
     public void generateAllCombos(int numPositions) {
@@ -177,12 +162,13 @@ public class AICodeBreaker {
     }
 
     public void printRemainingCombos(int numPositions) {
+
         for (int i = 0; i < remainingCombos.length; i++) {
+            System.out.print(i);
             for (int j = 0; j < numPositions; j++) {
                 System.out.print(remainingCombos[i][j] + " ");
             }
             System.out.println(" ");
         }
     }
-
 }
