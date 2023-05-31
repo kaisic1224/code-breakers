@@ -3,22 +3,17 @@ package cb;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import cb.Board.Colour;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 public class CodeBreaker extends JFrame implements ActionListener {
     final String fontColour = "#374151";
     final String backgroundColour = "#FFBE79";
     private static Board board;
-    private boolean pvp;
-    private int turn;
 
     static Font ForeverFontBold = null;
     static Scanner scan; // is this allowed????
@@ -80,7 +75,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // g.fillOval(20, 20, 10, 10);
 
         if (isCodeBreaker) {
-
             JButton clearAll = new JButton("Clear all");
             JButton submit = new JButton("Submit");
             clearAll.setEnabled(false);
@@ -128,12 +122,28 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 }
             });
             colourPicker.add(clearAll);
+            int turn = 0;
 
             submit.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     displayColours.removeAll();
+                    Component[] guessColours = displayColours.getComponents();
+                    String[] colors = new String[4];
+
+                    for (int i = 0; i < guessColours.length; i++) {
+                        colors[i] = board.colourToString(guessColours[i].getBackground());
+                    }
+
+                    board.checkGuess(colors, board.getCode(), turn);
+                    boardPanel.revalidate();
+                    boardPanel.repaint();
+
+                    displayColours.removeAll();
+                    displayColours.revalidate();
+                    displayColours.repaint();
                 }
             });
+            colourPicker.add(submit);
 
         } else {
             AI = new AICodeBreaker(board.getSize());
@@ -229,6 +239,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             colourPicker.add(submitSelection);
         }
+
         mainPanel.add(feedbackPanel);
 
         GridBagConstraints c = new GridBagConstraints();
