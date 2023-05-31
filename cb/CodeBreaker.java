@@ -16,6 +16,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
     private static Board board;
 
     static Font ForeverFontBold = null;
+    static Font ForeverFontTitle = null;
+    static Font ForeverFontNormal = null;
+    static Font ForeverFont;
     static Scanner scan; // is this allowed????
 
     static Color[] feedbackColours = { Color.black, Color.white };
@@ -26,19 +29,67 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public static JPanel boardPanel;
     public static JPanel feedbackPanel;
+    public static JPanel colourPicker;
+    public static JPanel displayColours;
+
+    public static JFrame gameFrame;
 
     public static void LoadAssets() {
-        Font ForeverFont = null;
         try {
             ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Forever.ttf"));
         } catch (Exception e) {
             System.out.println("File could not be found, or error parsing font");
         }
         ForeverFontBold = ForeverFont.deriveFont(Font.BOLD, 16f);
+        ForeverFontNormal = ForeverFont.deriveFont(16f);
+        ForeverFontTitle = ForeverFont.deriveFont(Font.BOLD, 100f);
+    }
+
+    public static void Tutorial(JFrame frame) {
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+        JLabel title = new JLabel("TUTORIAL");
+        title.setFont(ForeverFontTitle);
+
+        JLabel instructions = new JLabel("<html>"
+                + " a random code (consisting of 6 colours with a code length of 4) is set by the code setter"
+                + "<br />" +
+                "The code breaker gets a maximum of 10 tries to guess the code and is given feedback as to how many correctly positioned colour pegs the guess has and how many correct colour but incorrectly positioned pegs the guess has"
+                + "<br />" +
+                "The program has two options: an AI sets the code and the player tries to guess the code or the player sets the code and the program guesses the code within 10 tries"
+                +
+                "</html>");
+        instructions.setFont(ForeverFontNormal);
+
+        JButton backToMenu = new JButton("Back to Menu");
+        backToMenu.setFont(ForeverFontBold);
+        backToMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new CodeBreaker();
+                gameFrame.setVisible(false);
+            }
+        });
+
+        mainPanel.add(title);
+        mainPanel.add(instructions);
+        mainPanel.add(backToMenu);
+
+        frame.add(mainPanel);
+        frame.setVisible(true);
     }
 
     // will use current object inside Board instance variable to render board
     public static void Game(JFrame frame, boolean isCodeBreaker) {
+
+        try {
+            myWriter = new PrintWriter("data.txt");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
         ArrayList<JButton> playerCode = new ArrayList<JButton>();
@@ -69,8 +120,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         mainPanel.add(boardPanel);
         mainPanel.add(feedbackPanel);
 
-        JPanel colourPicker = new JPanel(new FlowLayout());
-        JPanel displayColours = new JPanel(new FlowLayout());
+        colourPicker = new JPanel(new FlowLayout());
+        displayColours = new JPanel(new FlowLayout());
         // Graphics g = colourPicker.getGraphics();
         // g.fillOval(20, 20, 10, 10);
 
@@ -113,6 +164,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
 
             clearAll.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent e) {
                     playerCode.clear();
                     clearAll.setEnabled(false);
@@ -147,6 +199,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         } else {
             AI = new AICodeBreaker(board.getSize());
+            AI.generateAllCombos(board.getSize());
+            attempts = 0;
 
             for (int i = 0; i < 2; i++) {
 
@@ -229,8 +283,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     }
 
                     attempts++;
-                    System.out.println("BLACKS: " + blacks);
-                    System.out.println("WHITES: " + whites);
+
                     playerIsCodeSetter(blacks, whites);
 
                 }
@@ -293,7 +346,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         aiPlay.setHorizontalTextPosition(JButton.LEFT);
         aiPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFrame gameFrame = new JFrame("Code Breakers | Player is code breaker");
+                gameFrame = new JFrame("Code Breakers | Player is code breaker");
                 // playerIsCodeSetter(); fix later
                 board = new Board();
                 Game(gameFrame, true);
@@ -310,10 +363,21 @@ public class CodeBreaker extends JFrame implements ActionListener {
         personPlay.setHorizontalTextPosition(JButton.LEFT);
         personPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFrame gameFrame = new JFrame("Code Breakers | Player is code setter");
+                gameFrame = new JFrame("Code Breakers | Player is code setter");
                 board = new Board();
                 Game(gameFrame, false);
                 playerIsCodeSetter(-1, -1);
+                setVisible(false);
+            }
+        });
+
+        JButton tutorial = new JButton("TUTORIAL", arrowImg);
+        tutorial.setFont(ForeverFontBold);
+        tutorial.setHorizontalTextPosition(JButton.LEFT);
+        tutorial.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                gameFrame = new JFrame("Code Breakers | Tutorial");
+                Tutorial(gameFrame);
                 setVisible(false);
             }
         });
@@ -325,6 +389,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // buttons.add(personButtonPlay);
         buttons.add(aiPlay);
         buttons.add(personPlay);
+        buttons.add(tutorial);
 
         hero.setBackground(new Color(255, 190, 121));
         mainPanel.setBackground(new Color(255, 190, 121));
@@ -345,7 +410,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         scan = new Scanner(System.in);
 
         new CodeBreaker();
-        selfTest();
+        // selfTest();
     }
 
     public static void playerIsCodeBreaker() {
@@ -388,13 +453,14 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static void playerIsCodeSetter(int blacks, int whites) {
 
         if (blacks == board.getSize()) {
-            System.out.println("YAZERS");
+            finalMessage("AI WINS");
         } else {
-            AI.generateAllCombos(board.getSize());
 
+            System.out.println("Blacks: " + blacks);
+            System.out.println("Whites: " + whites);
             String[] code = AI.guessCombo(blacks, whites);
             printArray(code);
-            board.board[board.getTries() - 1 - attempts] = code;
+            board.board[board.getTries() - 1 - attempts] = code.clone();
             revalidateBoard();
         }
 
@@ -461,6 +527,42 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     }
 
+    public static void finalMessage(String message) {
+        feedbackPanel.removeAll();
+        boardPanel.removeAll();
+        colourPicker.removeAll();
+        displayColours.removeAll();
+
+        JLabel display = new JLabel(message);
+
+        display.setFont(ForeverFontTitle);
+
+        feedbackPanel.add(display);
+
+        JButton backToMenu = new JButton("Back to Menu");
+        backToMenu.setFont(ForeverFontBold);
+        backToMenu.setHorizontalTextPosition(JButton.LEFT);
+        backToMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new CodeBreaker();
+                gameFrame.setVisible(false);
+            }
+        });
+
+        feedbackPanel.add(backToMenu);
+
+        feedbackPanel.revalidate();
+        boardPanel.revalidate();
+        colourPicker.revalidate();
+        displayColours.revalidate();
+
+        feedbackPanel.repaint();
+        boardPanel.repaint();
+        colourPicker.repaint();
+        displayColours.repaint();
+
+    }
+
     public static void saveToFile(String[] record, String accountName) throws IOException {
         PrintWriter aw = new PrintWriter(new FileWriter("./accounts/" + accountName + ".txt", true));
 
@@ -492,7 +594,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public static void selfTest() {
         try {
-            myWriter = new PrintWriter("data.txt");
             Board board = new Board();
             System.out.println("SELF TEST -------------------------");
 
@@ -506,9 +607,10 @@ public class CodeBreaker extends JFrame implements ActionListener {
             int[] attemptsArray = new int[AI.remainingCombos.length];
             int[] attemptsSort = new int[7];
 
-            for (int i = 0; i < AI.allCombos.length; i++) {
+            for (int i = 0; i < 10; i++) {
 
                 AI.remainingCombos = AI.allCombos.clone();
+                AI.nonGuessedCombos = AI.allCombos.clone();
 
                 int attempts = 1;
                 int blacks = -1;
@@ -599,12 +701,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static void printArray(String[] array) {
         try {
             for (int j = 0; j < array.length; j++) {
-                // System.out.print(array[j] + " ");
+                System.out.print(array[j] + " ");
 
                 myWriter.write(array[j] + " ");
 
             }
-            // System.out.println(" ");
+            System.out.println(" ");
 
             myWriter.write(System.lineSeparator());
         } catch (Exception e) {
