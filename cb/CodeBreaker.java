@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class CodeBreaker extends JFrame implements ActionListener {
+public class CodeBreaker extends JFrame {
     final String fontColour = "#374151";
     final String backgroundColour = "#FFBE79";
     private static Board board;
@@ -22,6 +22,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     static int numColoursSelected = 0;
     static String[] playerFeedback = new String[4];
     static int attempts = 0;
+    static int turn = 0;
     static AICodeBreaker AI;
 
     public static JPanel boardPanel;
@@ -71,10 +72,10 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         JPanel colourPicker = new JPanel(new FlowLayout());
         JPanel displayColours = new JPanel(new FlowLayout());
-        // Graphics g = colourPicker.getGraphics();
-        // g.fillOval(20, 20, 10, 10);
 
         if (isCodeBreaker) {
+            board.generateCode();
+            board.printCode();
             JButton clearAll = new JButton("Clear all");
             JButton submit = new JButton("Submit");
             clearAll.setEnabled(false);
@@ -122,11 +123,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 }
             });
             colourPicker.add(clearAll);
-            int turn = 0;
 
             submit.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    displayColours.removeAll();
                     Component[] guessColours = displayColours.getComponents();
                     String[] colors = new String[4];
 
@@ -134,13 +133,50 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         colors[i] = board.colourToString(guessColours[i].getBackground());
                     }
 
-                    board.checkGuess(colors, board.getCode(), turn);
-                    boardPanel.revalidate();
-                    boardPanel.repaint();
+                    String[] evaluation = board.checkGuess(colors, board.getCode(), turn);
+                    int[] pegs = board.returnPegs(evaluation);
+                    String[] feedback = new String[4];
+                        for (int i = 0; i < pegs[0]; i++) {
+                            feedback[i] = "WHITE";
+                        }
+                        for (int i = 0; i < pegs[1]; i++) {
+                            int index = pegs[0] + i;
+                            feedback[index] = "BLACK";
+                        }
+                    
+                    board.feedback[board.getTries() - 1 - turn] = feedback;
 
+                    feedbackPanel.removeAll();
+                    for (int i = 0; i < board.getTries(); i++) {
+                        for (int j = 0; j < board.getSize(); j++) {
+                            String colourName = board.feedback[i][j];
+                            JLabel cell = new JLabel("");
+                            cell.setPreferredSize(new Dimension(50, 50));
+                            cell.setBorder(BorderFactory.createLineBorder(Color.black));
+                            cell.setOpaque(true);
+                            Color c = null;
+                            try {
+                                c = (Color) Color.class.getField(colourName).get(null);
+                            } catch (Exception ex) {
+                                System.out.println(ex.getMessage());
+                            }
+                            cell.setBackground(c);
+
+            
+                            feedbackPanel.add(cell);
+                        }
+                    }
+                    feedbackPanel.revalidate();
+                    feedbackPanel.repaint();
+
+                    board.board[board.getTries() - 1 - turn] = colors;
+                    revalidateBoard();
+
+                    playerCode.clear();
                     displayColours.removeAll();
                     displayColours.revalidate();
                     displayColours.repaint();
+                    turn++;
                 }
             });
             colourPicker.add(submit);
@@ -346,41 +382,28 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // selfTest();
     }
 
-    public static void playerIsCodeBreaker() {
-        board = new Board();
-
-        board.generateCode();
-        board.printCode();
-
+    public static void playerIsCodeBreaker(String[] userGuess) {
         int maxAttempts = board.getTries();
         int attempts = 1;
         boolean finishedGame = false;
 
-        do {
-            System.out.println(
-                    "Enter your guess (seperated by spaces): " + " (attempt " + attempts + " / " + maxAttempts + ")");
+        String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
 
-            String[] userGuess = scan.nextLine().split(" ");
-            String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
+        // where 1 = black and 0 = white;
+        int[] pegHolder = board.returnPegs(feedBack);
 
-            // where 1 = black and 0 = white;
-            int[] pegHolder = board.returnPegs(feedBack);
+        if (pegHolder[1] == board.getSize()) {
+            System.out.println("You win with " + attempts + " moves! ");
+            finishedGame = true;
+        } else if (attempts == maxAttempts) {
+            System.out.println("You lose! The code is: ");
+            board.printCode();
 
-            System.out.println("Feedback: " + pegHolder[1] + " blacks , " + pegHolder[0] + " whites");
+            finishedGame = true;
+        }
 
-            if (pegHolder[1] == board.getSize()) {
-                System.out.println("You win with " + attempts + " moves! ");
-                finishedGame = true;
-            } else if (attempts == maxAttempts) {
-                System.out.println("You lose! The code is: ");
-                board.printCode();
+        attempts++;
 
-                finishedGame = true;
-            }
-
-            attempts++;
-
-        } while (!finishedGame);
     }
 
     public static void playerIsCodeSetter(int blacks, int whites) {
@@ -392,12 +415,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             String[] code = AI.guessCombo(blacks, whites);
             board.board[board.getTries() - 1 - attempts] = code;
-            revalidatBoard();
+            revalidateBoard();
         }
 
     }
 
-    public static void revalidatBoard() {
+    public static void revalidateBoard() {
         boardPanel.removeAll();
 
         for (int i = 0; i < board.getTries(); i++) {
@@ -479,10 +502,14 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+    public static void repaintBoard(JPanel boardPanel, int turn) {
+        boardPanel.removeAll();
+        for (int i = board.getTries() - 1 - turn; i > 0; i--) {
+            for (int j = board.getSize() - 1 - turn; j > 0; j--) {
+                System.out.println(board.board[i][j]);
+
+            }
+        }
     }
 
     public static void selfTest() {

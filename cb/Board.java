@@ -130,7 +130,7 @@ public class Board {
             case "java.awt.Color[r=255,g=175,b=175]":
                 return "PINK";
             default:
-                return "IDK WHAT ";
+                return "INVALID COLOUR";
         }
 
     }
