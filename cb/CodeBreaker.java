@@ -2,6 +2,8 @@ package cb;
 
 import java.io.*;
 import java.util.*;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import cb.Board.Colour;
@@ -9,10 +11,16 @@ import cb.Board.Colour;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 
 public class CodeBreaker extends JFrame {
     final String fontColour = "#374151";
     final String backgroundColour = "#FFBE79";
+    final String black900 = "#000814";
+    final String navy800 = "#001d3d";
+    final String navy600 = "#003566";
+    final String yellow700 = "#ffc300";
+    final String yellow500 = "#ffd60a";
     private static Board board;
 
     static Font ForeverFontBold = null;
@@ -125,6 +133,23 @@ public class CodeBreaker extends JFrame {
         JPanel displayColours = new JPanel(new FlowLayout());
 
         if (isCodeBreaker) {
+            // BufferedImage sheet = loadSpriteSheet("./cb/assets/sprites/1.png");
+            // ArrayList<BufferedImage> frames = getFrames(sheet, 50, 50);
+            // for (int i = 0; i < frames.size(); i++) {
+            //     Image f = new ImageIcon(frames.get(i)).getImage();
+            //     JLabel xd = new JLabel(new ImageIcon(f.getScaledInstance(200, 200, Image.SCALE_FAST)));
+                
+            //     mainPanel.removeAll();
+            //     mainPanel.add(xd);
+            //     try {
+            //         Thread.sleep(12);
+            //     } catch (Exception e) {
+            //         e.printStackTrace();
+            //     }
+            //     mainPanel.revalidate();
+            //     mainPanel.repaint();
+            // }
+            
             board.generateCode();
             board.printCode();
             JButton clearAll = new JButton("Clear all");
@@ -156,8 +181,9 @@ public class CodeBreaker extends JFrame {
                         displayColours.add(code);
                         displayColours.revalidate();
                         displayColours.repaint();
+                        clearAll.setEnabled(true);
                         if (playerCode.size() == 4) {
-                            clearAll.setEnabled(true);
+                            submit.setEnabled(true);
                         }
                     }
                 });
@@ -169,6 +195,7 @@ public class CodeBreaker extends JFrame {
                 public void actionPerformed(ActionEvent e) {
                     playerCode.clear();
                     clearAll.setEnabled(false);
+                    submit.setEnabled(false);
                     displayColours.removeAll();
                     displayColours.revalidate();
                     displayColours.repaint();
@@ -176,6 +203,7 @@ public class CodeBreaker extends JFrame {
             });
             colourPicker.add(clearAll);
 
+            submit.setEnabled(false);
             submit.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Component[] guessColours = displayColours.getComponents();
@@ -210,7 +238,7 @@ public class CodeBreaker extends JFrame {
                             try {
                                 c = (Color) Color.class.getField(colourName).get(null);
                             } catch (Exception ex) {
-                                System.out.println(ex.getMessage());
+                                ex.printStackTrace();
                             }
                             cell.setBackground(c);
 
@@ -229,6 +257,8 @@ public class CodeBreaker extends JFrame {
                     displayColours.revalidate();
                     displayColours.repaint();
                     turn++;
+                    submit.setEnabled(false);
+                    clearAll.setEnabled(false);
                 }
             });
             colourPicker.add(submit);
@@ -445,14 +475,18 @@ public class CodeBreaker extends JFrame {
         // intialize objects
         scan = new Scanner(System.in);
 
-        new CodeBreaker();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new CodeBreaker();
+            }
+        });
         // selfTest();
     }
 
     public static void playerIsCodeBreaker(String[] userGuess) {
         int maxAttempts = board.getTries();
         int attempts = 1;
-        boolean finishedGame = false;
 
         String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
 
@@ -461,12 +495,10 @@ public class CodeBreaker extends JFrame {
 
         if (pegHolder[1] == board.getSize()) {
             System.out.println("You win with " + attempts + " moves! ");
-            finishedGame = true;
         } else if (attempts == maxAttempts) {
             System.out.println("You lose! The code is: ");
             board.printCode();
 
-            finishedGame = true;
         }
 
         attempts++;
@@ -607,15 +639,6 @@ public class CodeBreaker extends JFrame {
 
     }
 
-    public static void repaintBoard(JPanel boardPanel, int turn) {
-        boardPanel.removeAll();
-        for (int i = board.getTries() - 1 - turn; i > 0; i--) {
-            for (int j = board.getSize() - 1 - turn; j > 0; j--) {
-                System.out.println(board.board[i][j]);
-
-            }
-        }
-    }
 
     public static PrintWriter myWriter;
 
@@ -740,5 +763,39 @@ public class CodeBreaker extends JFrame {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+
+
+
+    public static BufferedImage loadSpriteSheet(String file) {
+        BufferedImage sheet = null;
+
+        try {
+            sheet = ImageIO.read(new File(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return sheet;
+    }
+
+    public static BufferedImage getSprite(BufferedImage spriteSheet, int tileSize, int xPos, int yPos) {
+        if (spriteSheet == null) {
+            return null;
+        }
+
+        return spriteSheet.getSubimage(xPos * tileSize, yPos * tileSize, tileSize, tileSize);
+    }
+    
+    public static ArrayList<BufferedImage> getFrames(BufferedImage spritesheet, int tileSize, int maxFrames) {
+        ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
+        for (int i = 0; i < maxFrames; i++) {
+            BufferedImage frame = getSprite(spritesheet, tileSize, i, 1);
+            frames.add(frame);
+        }
+
+        return frames;
+
     }
 }
