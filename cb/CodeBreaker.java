@@ -32,8 +32,6 @@ public class CodeBreaker extends JFrame {
     static Color[] feedbackColours = { Color.black, Color.white };
     static int numColoursSelected = 0;
     static String[] playerFeedback = new String[4];
-    static int attempts = 0;
-    static int turn = 0;
     static AICodeBreaker AI;
 
     public static JPanel boardPanel;
@@ -91,11 +89,9 @@ public class CodeBreaker extends JFrame {
 
     // will use current object inside Board instance variable to render board
     public static void Game(JFrame frame, boolean isCodeBreaker) {
-
         try {
             myWriter = new PrintWriter("data.txt");
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -108,23 +104,8 @@ public class CodeBreaker extends JFrame {
         boardPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
         feedbackPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
 
-        for (int i = 0; i < board.getTries(); i++) {
-            for (int j = 0; j < board.getSize(); j++) {
-                JLabel cell = new JLabel("");
-                cell.setPreferredSize(new Dimension(50, 50));
-                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                boardPanel.add(cell);
-            }
-        }
-
-        for (int i = 0; i < board.getTries(); i++) {
-            for (int j = 0; j < board.getSize(); j++) {
-                JLabel cell = new JLabel();
-                cell.setPreferredSize(new Dimension(50, 50));
-                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                feedbackPanel.add(cell);
-            }
-        }
+        revalidateBoard();
+        revalidateFeedback();
 
         mainPanel.add(boardPanel);
         mainPanel.add(feedbackPanel);
@@ -136,20 +117,21 @@ public class CodeBreaker extends JFrame {
             // BufferedImage sheet = loadSpriteSheet("./cb/assets/sprites/1.png");
             // ArrayList<BufferedImage> frames = getFrames(sheet, 50, 50);
             // for (int i = 0; i < frames.size(); i++) {
-            //     Image f = new ImageIcon(frames.get(i)).getImage();
-            //     JLabel xd = new JLabel(new ImageIcon(f.getScaledInstance(200, 200, Image.SCALE_FAST)));
-                
-            //     mainPanel.removeAll();
-            //     mainPanel.add(xd);
-            //     try {
-            //         Thread.sleep(12);
-            //     } catch (Exception e) {
-            //         e.printStackTrace();
-            //     }
-            //     mainPanel.revalidate();
-            //     mainPanel.repaint();
+            // Image f = new ImageIcon(frames.get(i)).getImage();
+            // JLabel xd = new JLabel(new ImageIcon(f.getScaledInstance(200, 200,
+            // Image.SCALE_FAST)));
+
+            // mainPanel.removeAll();
+            // mainPanel.add(xd);
+            // try {
+            // Thread.sleep(12);
+            // } catch (Exception e) {
+            // e.printStackTrace();
             // }
-            
+            // mainPanel.revalidate();
+            // mainPanel.repaint();
+            // }
+
             board.generateCode();
             board.printCode();
             JButton clearAll = new JButton("Clear all");
@@ -160,13 +142,8 @@ public class CodeBreaker extends JFrame {
                 peg.setPreferredSize(new Dimension(50, 50));
                 peg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 peg.setOpaque(true);
-                Color c = null;
-                try {
-                    c = (Color) Color.class.getField(Colour.values()[i].toString().toUpperCase()).get(null);
-                    peg.setBackground(c);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Color c = stringToColor(Colour.values()[i].toString().toUpperCase());
+                peg.setBackground(c);
 
                 peg.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -210,21 +187,21 @@ public class CodeBreaker extends JFrame {
                     String[] colors = new String[4];
 
                     for (int i = 0; i < guessColours.length; i++) {
-                        colors[i] = board.colourToString(guessColours[i].getBackground());
+                        colors[i] = colorToString(guessColours[i].getBackground());
                     }
 
-                    String[] evaluation = board.checkGuess(colors, board.getCode(), turn);
+                    String[] evaluation = board.checkGuess(colors, board.getCode(), board.turn);
                     int[] pegs = board.returnPegs(evaluation);
                     String[] feedback = new String[4];
-                        for (int i = 0; i < pegs[0]; i++) {
-                            feedback[i] = "WHITE";
-                        }
-                        for (int i = 0; i < pegs[1]; i++) {
-                            int index = pegs[0] + i;
-                            feedback[index] = "BLACK";
-                        }
-                    
-                    board.feedback[board.getTries() - 1 - turn] = feedback;
+                    for (int i = 0; i < pegs[0]; i++) {
+                        feedback[i] = "WHITE";
+                    }
+                    for (int i = 0; i < pegs[1]; i++) {
+                        int index = pegs[0] + i;
+                        feedback[index] = "BLACK";
+                    }
+
+                    board.feedback[board.getTries() - 1 - board.turn] = feedback;
 
                     feedbackPanel.removeAll();
                     for (int i = 0; i < board.getTries(); i++) {
@@ -234,29 +211,24 @@ public class CodeBreaker extends JFrame {
                             cell.setPreferredSize(new Dimension(50, 50));
                             cell.setBorder(BorderFactory.createLineBorder(Color.black));
                             cell.setOpaque(true);
-                            Color c = null;
-                            try {
-                                c = (Color) Color.class.getField(colourName).get(null);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
+                            Color c = stringToColor(colourName);
                             cell.setBackground(c);
 
-            
                             feedbackPanel.add(cell);
                         }
                     }
                     feedbackPanel.revalidate();
                     feedbackPanel.repaint();
 
-                    board.board[board.getTries() - 1 - turn] = colors;
+                    board.board[board.getTries() - 1 - board.turn] = colors;
                     revalidateBoard();
+                    playerIsCodeBreaker(pegs[0], pegs[1]);
 
                     playerCode.clear();
                     displayColours.removeAll();
                     displayColours.revalidate();
                     displayColours.repaint();
-                    turn++;
+                    board.turn++;
                     submit.setEnabled(false);
                     clearAll.setEnabled(false);
                 }
@@ -266,7 +238,7 @@ public class CodeBreaker extends JFrame {
         } else {
             AI = new AICodeBreaker(board.getSize());
             AI.generateAllCombos(board.getSize());
-            attempts = 0;
+            board.turn = 0;
 
             for (int i = 0; i < 2; i++) {
 
@@ -329,7 +301,7 @@ public class CodeBreaker extends JFrame {
                     numColoursSelected = 0;
 
                     // use clone or else when we assign as PBR!
-                    board.feedback[board.getTries() - 1 - attempts] = playerFeedback.clone();
+                    board.feedback[board.getTries() - 1 - board.turn] = playerFeedback.clone();
 
                     revalidateFeedback();
 
@@ -348,7 +320,7 @@ public class CodeBreaker extends JFrame {
                         }
                     }
 
-                    attempts++;
+                    board.turn++;
 
                     playerIsCodeSetter(blacks, whites);
 
@@ -386,11 +358,6 @@ public class CodeBreaker extends JFrame {
         panel2.setOpaque(false);
         panel2.setLayout(new BorderLayout());
 
-        JLabel label = new JLabel("Fading Panel");
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 24f));
-        label.setForeground(Color.WHITE);
-        panel2.add(label, BorderLayout.CENTER);
 
         JPanel hero = new JPanel();
         BoxLayout heroLayout = new BoxLayout(hero, BoxLayout.Y_AXIS);
@@ -413,17 +380,12 @@ public class CodeBreaker extends JFrame {
         aiPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 gameFrame = new JFrame("Code Breakers | Player is code breaker");
-                // playerIsCodeSetter(); fix later
                 board = new Board();
                 Game(gameFrame, true);
                 setVisible(false);
             }
         });
 
-        // aiButtonPlay.add(aiPlay);
-        // aiButtonPlay.add(arrowImg);
-        // ------------------------------------------------
-        // JPanel personButtonPlay = new JPanel(new FlowLayout());
         JButton personPlay = new JButton("CODE SETTER", arrowImg);
         personPlay.setFont(ForeverFontBold);
         personPlay.setHorizontalTextPosition(JButton.LEFT);
@@ -448,11 +410,6 @@ public class CodeBreaker extends JFrame {
             }
         });
 
-        // personButtonPlay.add(personPlay);
-        // personButtonPlay.add(arrowImg2);
-        // ------------------------------------------------
-        // buttons.add(aiButtonPlay);
-        // buttons.add(personButtonPlay);
         buttons.add(aiPlay);
         buttons.add(personPlay);
         buttons.add(tutorial);
@@ -484,25 +441,17 @@ public class CodeBreaker extends JFrame {
         // selfTest();
     }
 
-    public static void playerIsCodeBreaker(String[] userGuess) {
-        int maxAttempts = board.getTries();
-        int attempts = 1;
-
-        String[] feedBack = board.checkGuess(userGuess, board.getCode(), attempts - 1);
-
+    public static void playerIsCodeBreaker(int whites, int blacks) {
         // where 1 = black and 0 = white;
-        int[] pegHolder = board.returnPegs(feedBack);
+        int maxAttempts = board.getTries();
 
-        if (pegHolder[1] == board.getSize()) {
-            System.out.println("You win with " + attempts + " moves! ");
-        } else if (attempts == maxAttempts) {
+        if (blacks == board.getSize()) {
+            finalMessage("You win with " + board.turn + " moves! ");
+        } else if (board.turn == maxAttempts) {
             System.out.println("You lose! The code is: ");
             board.printCode();
 
         }
-
-        attempts++;
-
     }
 
     public static void playerIsCodeSetter(int blacks, int whites) {
@@ -515,7 +464,7 @@ public class CodeBreaker extends JFrame {
             System.out.println("Whites: " + whites);
             String[] code = AI.guessCombo(blacks, whites);
             printArray(code);
-            board.board[board.getTries() - 1 - attempts] = code.clone();
+            board.board[board.getTries() - 1 - board.turn] = code.clone();
             revalidateBoard();
         }
 
@@ -527,24 +476,14 @@ public class CodeBreaker extends JFrame {
         for (int i = 0; i < board.getTries(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
                 String colourName = board.board[i][j];
-
                 JLabel cell = new JLabel("");
                 cell.setPreferredSize(new Dimension(50, 50));
                 cell.setBorder(BorderFactory.createLineBorder(Color.black));
-                cell.setOpaque(true);
 
-                Color c = null;
-
-                for (int k = 0; k < Colour.values().length; k++) {
-                    if (Colour.values()[k].toString().equals(colourName)) {
-                        try {
-                            c = (Color) Color.class.getField(Colour.values()[k].toString().toUpperCase()).get(null);
-                            cell.setBackground(c);
-                            break;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
+                if (colourName != null) {
+                    cell.setOpaque(true);
+                    Color c = stringToColor(colourName);
+                    cell.setBackground(c);
                 }
 
                 boardPanel.add(cell);
@@ -638,7 +577,6 @@ public class CodeBreaker extends JFrame {
         return null;
 
     }
-
 
     public static PrintWriter myWriter;
 
@@ -765,9 +703,6 @@ public class CodeBreaker extends JFrame {
         }
     }
 
-
-
-
     public static BufferedImage loadSpriteSheet(String file) {
         BufferedImage sheet = null;
 
@@ -787,7 +722,7 @@ public class CodeBreaker extends JFrame {
 
         return spriteSheet.getSubimage(xPos * tileSize, yPos * tileSize, tileSize, tileSize);
     }
-    
+
     public static ArrayList<BufferedImage> getFrames(BufferedImage spritesheet, int tileSize, int maxFrames) {
         ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
         for (int i = 0; i < maxFrames; i++) {
@@ -797,5 +732,35 @@ public class CodeBreaker extends JFrame {
 
         return frames;
 
+    }
+
+    // hours wasted starting now: 1 - solved
+    public static String colorToString(Color c) {
+        switch (c.toString()) {
+            case "java.awt.Color[r=0,g=255,b=0]":
+                return "GREEN";
+            case "java.awt.Color[r=255,g=255,b=0]":
+                return "YELLOW";
+            case "java.awt.Color[r=0,g=0,b=255]":
+                return "BLUE";
+            case "java.awt.Color[r=255,g=200,b=0]":
+                return "ORANGE";
+            case "java.awt.Color[r=255,g=0,b=0]":
+                return "RED";
+            case "java.awt.Color[r=255,g=175,b=175]":
+                return "PINK";
+            default:
+                return "INVALID COLOUR";
+        }
+    }
+
+    public static Color stringToColor(String colourName) {
+        Color c = null;
+        try {
+            c = (Color) Color.class.getField(colourName).get(null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return c;
     }
 }
