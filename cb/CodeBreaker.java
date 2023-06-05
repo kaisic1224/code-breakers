@@ -24,7 +24,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
     static Color[] feedbackColours = { Color.black, Color.white };
     static int numColoursSelected = 0;
     static String[] playerFeedback = new String[4];
-    static int attempts = 0;
     static AICodeBreaker AI;
 
     public static JPanel boardPanel;
@@ -82,8 +81,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     // will use current object inside Board instance variable to render board
     public static void Game(JFrame frame, boolean isCodeBreaker) {
-
-        attempts = 0;
 
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
@@ -185,7 +182,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         colors[i] = board.colorToString(guessColours[i].getBackground());
                     }
 
-                    String[] evaluation = board.checkGuess(colors, board.getCode(), attempts);
+                    String[] evaluation = board.checkGuess(colors, board.getCode(), board.turn);
                     int[] pegs = board.returnPegs(evaluation);
                     String[] feedback = new String[4];
                     for (int i = 0; i < pegs[0]; i++) {
@@ -196,7 +193,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         feedback[index] = "BLACK";
                     }
 
-                    board.feedback[board.getTries() - 1 - attempts] = feedback;
+                    board.feedback[board.getTries() - 1 - board.turn] = feedback;
 
                     feedbackPanel.removeAll();
                     for (int i = 0; i < board.getTries(); i++) {
@@ -218,15 +215,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     feedbackPanel.revalidate();
                     feedbackPanel.repaint();
 
-                    board.board[board.getTries() - 1 - attempts] = colors;
+                    board.board[board.getTries() - 1 - board.turn] = colors;
                     revalidateBoard();
+                    board.turn++;
                     playerIsCodeBreaker(pegs[0], pegs[1]);
 
                     playerCode.clear();
                     displayColours.removeAll();
                     displayColours.revalidate();
                     displayColours.repaint();
-                    attempts++;
                     submit.setEnabled(false);
                     clearAll.setEnabled(false);
                 }
@@ -236,7 +233,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         } else {
             AI = new AICodeBreaker(board.getSize());
             AI.generateAllCombos(board.getSize());
-            attempts = 0;
+            board.turn = 0;
 
             for (int i = 0; i < 2; i++) {
 
@@ -300,7 +297,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     numColoursSelected = 0;
 
                     // use clone or else when we assign as PBR!
-                    board.feedback[board.getTries() - 1 - attempts] = playerFeedback.clone();
+                    board.feedback[board.getTries() - 1 - board.turn] = playerFeedback.clone();
 
                     revalidateFeedback();
 
@@ -319,7 +316,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         }
                     }
 
-                    attempts++;
+                    board.turn++;
 
                     playerIsCodeSetter(blacks, whites);
 
@@ -465,7 +462,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         if (blacks == board.getSize()) {
             finalMessage("You win with " + board.turn + " moves! ");
         } else if (board.turn == maxAttempts) {
-            System.out.println("You lose! The code is: ");
+            finalMessage("You lose! The code is: " + board.getCode());
             board.printCode();
 
         }
@@ -481,7 +478,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             System.out.println("Whites: " + whites);
             String[] code = AI.guessCombo(blacks, whites);
             printArray(code);
-            board.board[board.getTries() - 1 - attempts] = code.clone();
+            board.board[board.getTries() - 1 - board.turn] = code.clone();
             revalidateBoard();
         }
 
