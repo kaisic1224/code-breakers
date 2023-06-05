@@ -1,2 +1,9 @@
 Excalidraw: https://excalidraw.com/#room=ab6ce318e4e34461a2dc,nT10Xp4BIwzkzbYvDKn8Gw
 SWITCH EVERYTHING TO PANEL AFTER AND NOT SWITCHING JFRAMES 
+Color scheme reference: https://coolors.co/palette/000814-001d3d-003566-ffc300-ffd60a
+
+
+
+
+git log --graph --decorate --oneline
+// visualize our commits for reflection LMAO OUR COMMIT MESSAGES ARE SO FUGLY IM DYING
