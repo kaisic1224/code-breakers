@@ -206,6 +206,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                             cell.setPreferredSize(new Dimension(50, 50));
                             cell.setBorder(BorderFactory.createLineBorder(Color.black));
                             cell.setOpaque(true);
+                            System.out.println(colourName);
                             feedbackPanel.add(cell);
                             if (colourName == null)
                                 continue;
@@ -740,8 +741,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         Color c = null;
         try {
             c = (Color) Color.class.getField(colourName).get(null);
-            // System.out.println(colourName);
-            // System.out.println(c);
+            System.out.println(colourName);
+            System.out.println(c);
         } catch (Exception ex) {
             ex.printStackTrace();
             if (colourName != null)
