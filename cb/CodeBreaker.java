@@ -16,17 +16,19 @@ import java.awt.image.BufferedImage;
 public class CodeBreaker extends JFrame {
     final String fontColour = "#374151";
     final String backgroundColour = "#FFBE79";
-    final String black900 = "#000814";
-    final String navy800 = "#001d3d";
-    final String navy600 = "#003566";
-    final String yellow700 = "#ffc300";
-    final String yellow500 = "#ffd60a";
+    static String black900 = "#000814";
+    static String navy800 = "#001d3d";
+    static String navy600 = "#003566";
+    static String yellow700 = "#ffc300";
+    static String yellow500 = "#ffd60a";
     private static Board board;
 
     static Font ForeverFontBold = null;
     static Font ForeverFontTitle = null;
     static Font ForeverFontNormal = null;
     static Font ForeverFont;
+    static Font InsomniaFont;
+    static Font InsomniaFontBold = null;
     static Scanner scan; // is this allowed????
 
     static Color[] feedbackColours = { Color.black, Color.white };
@@ -44,12 +46,14 @@ public class CodeBreaker extends JFrame {
     public static void LoadAssets() {
         try {
             ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Forever.ttf"));
+            InsomniaFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Insomnia.ttf"));
         } catch (Exception e) {
             System.out.println("File could not be found, or error parsing font");
         }
         ForeverFontBold = ForeverFont.deriveFont(Font.BOLD, 16f);
         ForeverFontNormal = ForeverFont.deriveFont(16f);
         ForeverFontTitle = ForeverFont.deriveFont(Font.BOLD, 100f);
+        InsomniaFontBold = InsomniaFont.deriveFont(Font.BOLD, 100f);
     }
 
     public static void Tutorial(JFrame frame) {
@@ -95,20 +99,54 @@ public class CodeBreaker extends JFrame {
             e.printStackTrace();
         }
 
+        JLabel title = new JLabel("BREAK THE ");
+        JLabel title2 = new JLabel("CODE");
+        title.setFont(InsomniaFontBold);
+        title2.setFont(InsomniaFontBold);
+        title.setForeground(stringToColor(black900));
+        title2.setForeground(stringToColor(yellow500));
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        title2.setHorizontalAlignment(SwingConstants.CENTER);
+        JPanel titles = new JPanel();
+        titles.setBackground(stringToColor(navy600));
+        titles.add(title);
+        titles.add(title2);
+
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
+        frame.getContentPane().setBackground(stringToColor(navy600));
+
         ArrayList<JButton> playerCode = new ArrayList<JButton>();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel encompassingBoard = new JPanel(new GridBagLayout());
+        JPanel encompassingFeedback = new JPanel(new GridBagLayout());
+        JLabel boardLabel = new JLabel("Guess");
+        boardLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        JLabel feedbackLabel = new JLabel("Feedback");
+        feedbackLabel.setHorizontalAlignment(SwingConstants.LEFT);
         boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
         boardPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
         feedbackPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
 
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1;
+
+        encompassingBoard.add(boardLabel, gbc);
+        encompassingFeedback.add(feedbackLabel, gbc);
+        gbc.gridy = 1;
+        encompassingBoard.add(boardPanel, gbc);
+        encompassingFeedback.add(feedbackPanel, gbc);
+
         revalidateBoard();
         revalidateFeedback();
 
-        mainPanel.add(boardPanel);
-        mainPanel.add(feedbackPanel);
+        mainPanel.add(encompassingBoard);
+        mainPanel.add(encompassingFeedback);
 
         JPanel colourPicker = new JPanel(new FlowLayout());
         JPanel displayColours = new JPanel(new FlowLayout());
@@ -335,15 +373,18 @@ public class CodeBreaker extends JFrame {
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0; // take the first row in the layout
-        c.fill = GridBagConstraints.HORIZONTAL; // fill in width
+        c.fill = GridBagConstraints.NONE; // fill in width
         c.anchor = GridBagConstraints.NORTH;
         c.weightx = 1.0;
+        frame.add(titles, c);
+        
+        c.gridy = 1;
         frame.add(mainPanel, c);
 
-        c.gridy = 1;
+        c.gridy = 2;
         frame.add(colourPicker, c);
 
-        c.gridy = 2;
+        c.gridy = 3;
         frame.add(displayColours, c);
         frame.setVisible(true);
     }
@@ -357,7 +398,6 @@ public class CodeBreaker extends JFrame {
         panel2.setBackground(Color.BLUE);
         panel2.setOpaque(false);
         panel2.setLayout(new BorderLayout());
-
 
         JPanel hero = new JPanel();
         BoxLayout heroLayout = new BoxLayout(hero, BoxLayout.Y_AXIS);
@@ -760,6 +800,8 @@ public class CodeBreaker extends JFrame {
             c = (Color) Color.class.getField(colourName).get(null);
         } catch (Exception ex) {
             ex.printStackTrace();
+            if (colourName != null)
+                c = Color.decode(colourName);
         }
         return c;
     }
