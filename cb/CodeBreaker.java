@@ -122,6 +122,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // g.fillOval(20, 20, 10, 10);
 
         if (isCodeBreaker) {
+            board.generateCode();
+            board.printCode();
             JButton clearAll = new JButton("Clear all");
             JButton submit = new JButton("Submit");
             clearAll.setEnabled(false);
@@ -140,19 +142,22 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
                 peg.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        if (playerCode.size() == 4)
-                            return;
-                        playerCode.add(peg);
-                        JLabel code = new JLabel("");
-                        code.setPreferredSize(new Dimension(50, 50));
-                        code.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                        code.setOpaque(true);
-                        code.setBackground(peg.getBackground());
-                        displayColours.add(code);
-                        displayColours.revalidate();
-                        displayColours.repaint();
-                        if (playerCode.size() == 4) {
+                        if (playerCode.size() < 4) {
                             clearAll.setEnabled(true);
+                            playerCode.add(peg);
+                            JLabel code = new JLabel("");
+                            code.setPreferredSize(new Dimension(50, 50));
+                            code.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                            code.setOpaque(true);
+                            code.setBackground(peg.getBackground());
+                            displayColours.add(code);
+                            displayColours.revalidate();
+                            displayColours.repaint();
+
+                        }
+
+                        if (playerCode.size() == 4) {
+                            submit.setEnabled(true);
                         }
                     }
                 });
@@ -201,10 +206,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
                             cell.setPreferredSize(new Dimension(50, 50));
                             cell.setBorder(BorderFactory.createLineBorder(Color.black));
                             cell.setOpaque(true);
+                            feedbackPanel.add(cell);
+                            if (colourName == null)
+                                continue;
                             Color c = stringToColor(colourName);
                             cell.setBackground(c);
 
-                            feedbackPanel.add(cell);
                         }
                     }
                     feedbackPanel.revalidate();
@@ -239,6 +246,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 feedback.setBackground(feedbackColours[i]);
 
                 feedback.addActionListener(new ActionListener() {
+
                     public void actionPerformed(ActionEvent e) {
 
                         if (numColoursSelected < 4) {
@@ -732,6 +740,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         Color c = null;
         try {
             c = (Color) Color.class.getField(colourName).get(null);
+            // System.out.println(colourName);
+            // System.out.println(c);
         } catch (Exception ex) {
             ex.printStackTrace();
             if (colourName != null)

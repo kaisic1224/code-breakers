@@ -115,7 +115,7 @@ public class Board {
 
     }
 
-    public static String colorToString(Color c) {
+    public String colorToString(Color c) {
         switch (c.toString()) {
             case "java.awt.Color[r=0,g=255,b=0]":
                 return "GREEN";
