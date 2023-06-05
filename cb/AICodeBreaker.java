@@ -60,9 +60,39 @@ public class AICodeBreaker {
 
         }
 
-        lastGuess = bestGuess();
+        lastGuess = remainingCombos[scoreCombos()];
 
         return lastGuess;
+    }
+
+    public int scoreCombos() {
+        int highScore = -1;
+        int index = 0;
+
+        for (int i = 0; i < remainingCombos.length; i++) {
+            int impactScore = 0;
+
+            if (remainingCombos[i] != null) {
+                for (int j = 0; j < remainingCombos.length; j++) {
+
+                    if (remainingCombos[j] != null) {
+                        String[] feedback = board.checkGuess(remainingCombos[i], remainingCombos[j], 0);
+                        int[] pegHolder = board.returnPegs(feedback);
+
+                        impactScore += pegHolder[1];
+                        impactScore += pegHolder[0];
+                    }
+
+                }
+
+                if (impactScore > highScore) {
+                    impactScore = highScore;
+                    index = i;
+                }
+            }
+        }
+
+        return index;
     }
 
     public ArrayList<String[]> miniMax() {
@@ -70,6 +100,8 @@ public class AICodeBreaker {
         HashMap<int[], Integer> timesFound = new HashMap();
         HashMap<String[], Integer> scores = new HashMap();
         ArrayList<String[]> goodGuesses = new ArrayList<String[]>();
+
+        nonGuessedCombos = remainingCombos.clone();
 
         for (int i = 0; i < nonGuessedCombos.length; i++) {
 
@@ -110,6 +142,7 @@ public class AICodeBreaker {
         }
 
         return goodGuesses;
+        // make different diffcultities
     }
 
     public String[] bestGuess() {

@@ -83,13 +83,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
     // will use current object inside Board instance variable to render board
     public static void Game(JFrame frame, boolean isCodeBreaker) {
 
-        try {
-            myWriter = new PrintWriter("data.txt");
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLayout(new GridBagLayout());
         ArrayList<JButton> playerCode = new ArrayList<JButton>();
@@ -410,7 +403,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
         scan = new Scanner(System.in);
 
         new CodeBreaker();
-        // selfTest();
+
+        try {
+            myWriter = new PrintWriter("data.txt");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        selfTest();
     }
 
     public static void playerIsCodeBreaker() {
@@ -594,6 +595,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public static void selfTest() {
         try {
+
             Board board = new Board();
             System.out.println("SELF TEST -------------------------");
 
@@ -607,7 +609,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             int[] attemptsArray = new int[AI.remainingCombos.length];
             int[] attemptsSort = new int[7];
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < AI.allCombos.length; i++) {
 
                 AI.remainingCombos = AI.allCombos.clone();
                 AI.nonGuessedCombos = AI.allCombos.clone();
