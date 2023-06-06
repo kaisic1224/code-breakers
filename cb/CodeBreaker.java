@@ -47,6 +47,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static JPanel feedbackPanel;
     public static JPanel colourPicker;
     public static JPanel displayColours;
+    public static JTextField name;
 
     public static JFrame gameFrame;
 
@@ -331,7 +332,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         boardPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
-        boardPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
+        boardPanel.setBorder(new EmptyBorder(0, 0, 0, 94));
         feedbackPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
 
         JLabel currentRound = new JLabel();
@@ -363,6 +364,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         }
 
+        revalidateBoard();
+        revalidateFeedback();
+
         colourPicker = new JPanel(new FlowLayout());
         displayColours = new JPanel(new FlowLayout());
 
@@ -376,7 +380,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         if (isCodeBreaker) {
             board.generateCode();
             board.printCode();
-
             for (int i = 0; i < Colour.values().length; i++) {
                 JButton peg = new JButton("");
                 peg.setPreferredSize(new Dimension(50, 50));
@@ -778,7 +781,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     }
                 }
 
-                feedbackPanel.add(cell);
             }
         }
 
@@ -796,6 +798,20 @@ public class CodeBreaker extends JFrame implements ActionListener {
         feedbackPanel.add(Box.createVerticalGlue());
 
         JLabel display = new JLabel(message);
+        name = new JTextField("Enter a name");
+        JButton saveRecord = new JButton("Submit");
+        saveRecord.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    saveToFile(name.getText());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                new CodeBreaker();
+                gameFrame.setVisible(false);
+            }
+        });
+
         display.setFont(ForeverFontTitle);
         feedbackPanel.add(display);
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
@@ -832,6 +848,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
         feedbackPanel.add(backToMenu);
+        feedbackPanel.add(name);
+        feedbackPanel.add(saveRecord);
 
         feedbackPanel.add(Box.createVerticalGlue());
 
@@ -847,16 +865,18 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     }
 
-    public static void saveToFile(String[] record, String accountName) throws IOException {
-        PrintWriter aw = new PrintWriter(new FileWriter("./accounts/" + accountName + ".txt", true));
+    public static void saveToFile(String accountName) throws IOException {
+        File account = new File("cb/accounts/" + accountName + ".txt");
+        account.createNewFile();
+        PrintWriter aw = new PrintWriter(new FileWriter(account, true));
 
-        aw.println(String.join(",", record));
-
+        aw.println(accountName + "," + attempts);
         aw.close();
     }
 
     public static String getRecord(String[] accountName) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader("./accounts/" + accountName + ".txt"));
+        File account = new File("./cb/accounts/" + accountName + ".txt");
+        BufferedReader br = new BufferedReader(new FileReader(account));
 
         String line = br.readLine();
         while (line != null) {
