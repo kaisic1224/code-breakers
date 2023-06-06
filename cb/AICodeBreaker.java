@@ -203,6 +203,9 @@ public class AICodeBreaker {
                     for (int l = 0; l < Colour.values().length; l++) {
 
                         // assign colour combination their colour
+                        // - total count represents which combination number it is
+                        // - [0],[1],[2],[3] represent the colour positions in the code
+                        // - [i],[j],[k],[l] are used to get the colour values by index
                         remainingCombos[totalCount][0] = Colour.values()[i].toString();
                         remainingCombos[totalCount][1] = Colour.values()[j].toString();
                         remainingCombos[totalCount][2] = Colour.values()[k].toString();
