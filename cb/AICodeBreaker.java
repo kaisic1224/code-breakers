@@ -27,6 +27,10 @@ public class AICodeBreaker {
         return remainingCombos;
     }
 
+    public String[] getLastGuess() {
+        return lastGuess;
+    }
+
     // OITS NOT WORKEEY
     String[] guessCombo(int black, int white) {
 
@@ -197,11 +201,14 @@ public class AICodeBreaker {
     public void printRemainingCombos(int numPositions) {
 
         for (int i = 0; i < remainingCombos.length; i++) {
-            System.out.print(i);
-            for (int j = 0; j < numPositions; j++) {
-                System.out.print(remainingCombos[i][j] + " ");
+            if (remainingCombos[i] != null) {
+                for (int j = 0; j < numPositions; j++) {
+
+                    System.out.print(remainingCombos[i][j] + " ");
+                }
+                System.out.println(" ");
             }
-            System.out.println(" ");
+
         }
     }
 }

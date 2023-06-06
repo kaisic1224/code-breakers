@@ -7,7 +7,6 @@ public class Board {
     public String[][] board;
     public String[][] feedback;
     public String[] code;
-    public int turn = 0;
     private final int VALID_CHARS = 6;
     private final int SIZE = 4;
     private final int TRIES = 10;
