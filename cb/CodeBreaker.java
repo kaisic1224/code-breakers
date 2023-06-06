@@ -1,7 +1,9 @@
 package cb;
 
 import java.io.*;
-import java.security.KeyStore.LoadStoreParameter;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import javax.sound.sampled.AudioInputStream;
@@ -52,6 +54,14 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static JFrame gameFrame;
 
     public static void LoadAssets() {
+        File records = new File("./cb/accounts/records.txt");
+        if (!records.exists()) {
+            try {
+                records.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         try {
             ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Forever.ttf"));
         } catch (Exception e) {
@@ -582,6 +592,56 @@ public class CodeBreaker extends JFrame implements ActionListener {
         frame.setVisible(true);
     }
 
+    public static void userLogin(JFrame frame) {
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        JPanel loginPanel = new JPanel();
+        loginPanel.add(Box.createVerticalGlue());
+
+        JPanel usernamePanel = new JPanel(new FlowLayout());
+        JLabel usernameLabel = new JLabel("Username: ");
+        JTextField username = new JTextField("", 20);
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(username);
+        loginPanel.add(usernamePanel);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
+        
+        JPanel passwordPanel = new JPanel(new FlowLayout());
+        JLabel passwordLabel = new JLabel("Password: ");
+        JTextField password = new JTextField("", 20);
+        passwordPanel.add(passwordLabel);
+        passwordPanel.add(password);
+        loginPanel.add(passwordPanel);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
+
+        JButton submitLogin = new JButton("Login");
+        JLabel errorText = new JLabel("");
+        submitLogin.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String verified = null;
+                try {
+                    verified = login(username.getText(), password.getText());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    errorText.setText(ex.getMessage());                
+                }
+                if (verified.equals(username.getText())) {
+                    frame.setVisible(false);
+                    new CodeBreaker();
+                }
+            }
+        });
+        loginPanel.add(submitLogin);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
+
+        loginPanel.add(errorText);
+
+        frame.add(loginPanel);
+
+        frame.pack();
+        frame.setVisible(true);
+    }
+
     public CodeBreaker() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -670,6 +730,20 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         });
 
+        JButton login = new JButton("LOGIN", arrowImg);
+        login.setBackground(BUTTONCOLOUR);
+        login.setFont(ForeverFontBold);
+        login.setHorizontalTextPosition(JButton.LEFT);
+        login.setMaximumSize(MENUBUTTONSIZE);
+
+        login.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFrame loginFrame = new JFrame("Code Breakers | Login");
+                userLogin(loginFrame);
+                setVisible(false);
+            }
+        });
+
         // add to buttons panel
         buttons.add(aiPlay);
         buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
@@ -678,6 +752,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         buttons.add(tutorial);
         buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
         buttons.add(aiStats);
+        buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
+        buttons.add(login);
 
         // setbackgorund colours
         hero.setBackground(BGCOLOURORANGE);
@@ -777,15 +853,130 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 for (int k = 0; k < feedbackColours.length; k++) {
                     if (feedbackColours[k].toString().equals(colourName)) {
                         cell.setBackground(feedbackColours[k]);
-
                     }
                 }
+
+                feedbackPanel.add(cell);
 
             }
         }
 
         feedbackPanel.revalidate();
         feedbackPanel.repaint();
+
+    }
+
+
+
+    public static void leaderboard(JFrame frame) {
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        JPanel mainPanel = new JPanel();
+
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    public static String getPassword(String accountName) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader("./cb/accounts/accounts.txt"));
+
+        String line = br.readLine();
+        while (line != null) {
+            String[] accountInfo = line.split(",");
+            if (accountInfo[0].equals(accountName)) {
+                br.close();
+                return accountInfo[1];
+            }
+
+            line = br.readLine();
+        }
+
+        br.close();
+        return null;
+    }
+
+    public static String login(String accountName, String attemptPwd) throws Exception {
+        File account = new File("./cb/accounts/" + accountName + ".txt");
+        PrintWriter aw = new PrintWriter(new FileWriter(account, true));
+        PrintWriter pw = new PrintWriter(new FileWriter("./cb/accounts/accounts.txt", true));
+        BufferedReader br = new BufferedReader(new FileReader("./cb/accounts/accounts.txt"));
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] attemptHash = digest.digest(attemptPwd.getBytes(StandardCharsets.UTF_8));
+
+        if (account.exists()) {
+            br.close();
+            aw.close();
+            pw.close();
+            throw new Exception("Account already exists!");
+        }
+        String line = br.readLine();
+        while (line != null) {
+            // Check if their requested name can be found inside the game records, if they
+            // enter in an adjusted name with different capitalizations, do NOT let them
+            // create an account as files are not allowed to have duplicate names even with
+            // different capitiazlation
+            if (line.split(",")[0].equals(accountName)) {
+                // If their account can be found, then tell them they have logged in and return
+                // their name
+                String password = getPassword(accountName);
+                byte[] pwdHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+                if (Arrays.equals(attemptHash, pwdHash)) {
+                    System.out.println("\nSuccessfully logged in as " + line.split(",")[0]);
+                    pw.close();
+                    br.close();
+                    aw.close();
+                    return line.split(",")[0];
+                } else {
+                    pw.close();
+                    br.close();
+                    aw.close();
+                    throw new Exception("Wrong password inputted!");
+                }
+            } else {
+                // Otherwise keep searching
+                line = br.readLine();
+            }
+        }
+        // If the loop hasn't exited by now, that means an account with that name
+        // couldn't be found in the game records and let them know they created an
+        // account
+        System.out.println("\nSuccessfully created account: " + accountName + " with password: " + attemptPwd);
+        pw.println(accountName + "," + attemptHash);
+
+        pw.close();
+        br.close();
+        aw.close();
+        return accountName;
+    }
+
+    public static void saveToFile(String accountName) throws Exception {
+        login(accountName, accountName);
+        File account = new File("./cb/accounts/" + accountName + ".txt");
+        if (!account.exists()) {
+            account.createNewFile();
+        }
+        PrintWriter aw = new PrintWriter(new FileWriter(account, true));
+        File records = new File("./cb/accounts/records.txt");
+        PrintWriter pw = new PrintWriter(new FileWriter(records, true));
+        LocalDateTime ld = LocalDateTime.now();
+
+        aw.println(attempts);
+        pw.println(accountName + "," + attempts + "," + ld);
+
+        aw.close();
+        pw.close();
+    }
+
+    public static String getRecord(String[] accountName) throws IOException {
+        File account = new File("./cb/accounts/" + accountName + ".txt");
+        BufferedReader br = new BufferedReader(new FileReader(account));
+
+        String line = br.readLine();
+        while (line != null) {
+            br.close();
+            return line;
+        }
+        br.close();
+        return null;
 
     }
 
@@ -804,7 +995,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 try {
                     saveToFile(name.getText());
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
                 new CodeBreaker();
@@ -865,29 +1056,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     }
 
-    public static void saveToFile(String accountName) throws IOException {
-        File account = new File("cb/accounts/" + accountName + ".txt");
-        account.createNewFile();
-        PrintWriter aw = new PrintWriter(new FileWriter(account, true));
-
-        aw.println(accountName + "," + attempts);
-        aw.close();
-    }
-
-    public static String getRecord(String[] accountName) throws IOException {
-        File account = new File("./cb/accounts/" + accountName + ".txt");
-        BufferedReader br = new BufferedReader(new FileReader(account));
-
-        String line = br.readLine();
-        while (line != null) {
-            br.close();
-            return line;
-        }
-        br.close();
-        return null;
-
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
@@ -928,7 +1096,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         try {
 
-            File musicPath = new File("./cb/assets/bgMusic.wav");
+            File musicPath = new File("./cb/assets/sounds/bgMusic.wav");
             if (musicPath.exists()) {
                 AudioInputStream audioInput = AudioSystem.getAudioInputStream(musicPath);
                 Clip clip = AudioSystem.getClip();
