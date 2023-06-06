@@ -92,23 +92,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         boardPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
         feedbackPanel = new JPanel(new GridLayout(board.getTries(), board.getSize()));
 
-        for (int i = 0; i < board.getTries(); i++) {
-            for (int j = 0; j < board.getSize(); j++) {
-                JLabel cell = new JLabel("");
-                cell.setPreferredSize(new Dimension(50, 50));
-                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                boardPanel.add(cell);
-            }
-        }
-
-        for (int i = 0; i < board.getTries(); i++) {
-            for (int j = 0; j < board.getSize(); j++) {
-                JLabel cell = new JLabel();
-                cell.setPreferredSize(new Dimension(50, 50));
-                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                feedbackPanel.add(cell);
-            }
-        }
+        revalidateBoard();
+        revalidateFeedback();
 
         mainPanel.add(boardPanel);
         mainPanel.add(feedbackPanel);
