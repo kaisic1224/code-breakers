@@ -108,6 +108,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         backToMenu.setFont(ForeverFontBold);
         backToMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 new CodeBreaker();
                 gameFrame.setVisible(false);
             }
@@ -171,7 +173,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         // start a new thread
         Thread t = new Thread(new Runnable() {
-
             public void run() {
 
                 try {
@@ -299,6 +300,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     backToMenu.setBackground(BUTTONCOLOUR);
                     backToMenu.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
+                            music(false, "./cb/assets/sounds/pop.wav");
+
                             new CodeBreaker();
                             gameFrame.setVisible(false);
                         }
@@ -313,7 +316,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     loadPanel.repaint();
 
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
 
@@ -374,9 +376,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         }
 
-        revalidateBoard();
-        revalidateFeedback();
-
         colourPicker = new JPanel(new FlowLayout());
         displayColours = new JPanel(new FlowLayout());
 
@@ -405,6 +404,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
                 peg.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
+                        music(false, "./cb/assets/sounds/pop.wav");
+
                         if (numColoursSelected < board.getSize()) {
                             clearAll.setEnabled(true);
                             numColoursSelected++;
@@ -430,8 +431,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
 
             submit.addActionListener(new ActionListener() {
-
                 public void actionPerformed(ActionEvent e) {
+                    music(false, "./cb/assets/sounds/pop.wav");
+
                     Component[] guessColours = displayColours.getComponents();
                     String[] colors = new String[4];
 
@@ -451,14 +453,11 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     }
 
                     board.feedback[board.getTries() - 1 - attempts] = feedback;
-
                     revalidateFeedback();
-
-                    feedbackPanel.revalidate();
-                    feedbackPanel.repaint();
 
                     board.board[board.getTries() - 1 - attempts] = colors;
                     revalidateBoard();
+
                     attempts++;
                     playerIsCodeBreaker(pegs[0], pegs[1], colors);
 
@@ -489,6 +488,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
                     public void actionPerformed(ActionEvent e) {
 
+                        music(false, "./cb/assets/sounds/pop.wav");
+
                         if (numColoursSelected < board.getSize()) {
                             JLabel selectedColour = new JLabel("");
                             selectedColour.setPreferredSize(new Dimension(30, 30));
@@ -517,6 +518,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
             submit.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
+
+                    music(false, "./cb/assets/sounds/pop.wav");
 
                     clearAll.setEnabled(false);
 
@@ -553,43 +556,32 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 }
 
             });
-
         }
 
         // a function to clear all colours user selected
         clearAll.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
-                clearAll.setEnabled(false);
+    public void actionPerformed(ActionEvent e) {
+        music(false, "./cb/assets/sounds/pop.wav");
 
-                displayColours.removeAll();
-                displayColours.revalidate();
-                displayColours.repaint();
-                numColoursSelected = 0;
-            }
-        });
-        colourPicker.add(clearAll);
-        colourPicker.add(submit);
+        clearAll.setEnabled(false);
 
-        // panel layouts
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridy = 0;
-        frame.add(currentRound, c);
+        displayColours.removeAll();
+        displayColours.revalidate();
+        displayColours.repaint();
+        numColoursSelected = 0;
+    }});colourPicker.add(clearAll);colourPicker.add(submit);
 
-        mainPanel.add(boardPanel);
-        mainPanel.add(feedbackPanel);
-        c.gridy = 1; // take the first row in the layout
-        c.fill = GridBagConstraints.HORIZONTAL; // fill in width
-        c.anchor = GridBagConstraints.NORTH;
-        c.weightx = 1.0;
-        frame.add(mainPanel, c);
+    // panel layouts
+    GridBagConstraints c = new GridBagConstraints();c.gridy=0;frame.add(currentRound,c);
 
-        c.gridy = 2;
-        frame.add(colourPicker, c);
+    mainPanel.add(boardPanel);mainPanel.add(feedbackPanel);c.gridy=1; // take the first row in the layout
+    c.fill=GridBagConstraints.HORIZONTAL; // fill in width
+    c.anchor=GridBagConstraints.NORTH;c.weightx=1.0;frame.add(mainPanel,c);
 
-        c.gridy = 3;
-        frame.add(displayColours, c);
-        frame.setVisible(true);
+    c.gridy=2;frame.add(colourPicker,c);
+
+    c.gridy=3;frame.add(displayColours,c);frame.setVisible(true);
     }
 
     public static void userLogin(JFrame frame) {
@@ -675,6 +667,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         aiPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 gameFrame = new JFrame("Code Breakers | Player is code breaker");
                 board = new Board();
                 Game(gameFrame, true);
@@ -691,6 +685,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         personPlay.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 gameFrame = new JFrame("Code Breakers | Player is code setter");
                 board = new Board();
                 Game(gameFrame, false);
@@ -709,6 +705,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         tutorial.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 gameFrame = new JFrame("Code Breakers | Tutorial");
                 Tutorial(gameFrame);
                 setVisible(false);
@@ -724,6 +722,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         aiStats.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 gameFrame = new JFrame("Code Breakers | Stats");
                 AIstats(gameFrame);
                 setVisible(false);
@@ -772,7 +772,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         LoadAssets();
         new CodeBreaker();
-        bgMusic();
+        music(true, "./cb/assets/sounds/bgMusic.wav");
 
     }
 
@@ -865,8 +865,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         feedbackPanel.repaint();
 
     }
-
-
 
     public static void leaderboard(JFrame frame) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -988,11 +986,16 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         feedbackPanel.add(Box.createVerticalGlue());
 
+        // save the game
         JLabel display = new JLabel(message);
-        name = new JTextField("Enter a name");
-        JButton saveRecord = new JButton("Submit");
+        name = new JTextField("Enter your account name");
+        JButton saveRecord = new JButton("Save the game to a file");
+        saveRecord.setBackground(BUTTONCOLOUR);
+
         saveRecord.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 try {
                     saveToFile(name.getText());
                 } catch (Exception ex) {
@@ -1031,6 +1034,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         backToMenu.setHorizontalTextPosition(JButton.LEFT);
         backToMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
                 new CodeBreaker();
                 gameFrame.setVisible(false);
             }
@@ -1054,12 +1059,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         colourPicker.repaint();
         displayColours.repaint();
 
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
     public static Color stringToColor(String colourName) {
@@ -1092,22 +1091,32 @@ public class CodeBreaker extends JFrame implements ActionListener {
         }
     }
 
-    public static void bgMusic() {
+    public static void music(boolean loop, String path) {
 
         try {
 
-            File musicPath = new File("./cb/assets/sounds/bgMusic.wav");
+            File musicPath = new File(path);
             if (musicPath.exists()) {
                 AudioInputStream audioInput = AudioSystem.getAudioInputStream(musicPath);
                 Clip clip = AudioSystem.getClip();
                 clip.open(audioInput);
-                clip.loop(Clip.LOOP_CONTINUOUSLY);
 
+                if (loop) {
+                    clip.loop(Clip.LOOP_CONTINUOUSLY);
+                } else {
+                    clip.start();
+                }
             } else {
                 System.out.println("Music file does not exist");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 }
