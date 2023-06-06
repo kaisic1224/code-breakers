@@ -55,7 +55,7 @@ public class Board {
 
     // THERE IS SOMETHING WRONG HERE
     // hours wasted starting now: 1.5
-    public String[] checkGuess(String[] guess, String[] solution, int turn) {
+    public String[] checkGuess(String[] guess, String[] solution) {
         String[] temporaryCode = solution.clone();
         String[] evaluation = new String[solution.length];
 

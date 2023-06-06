@@ -139,7 +139,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         loadPanel.setLayout(new BoxLayout(loadPanel, BoxLayout.Y_AXIS));
 
         // init progress bar
-        JProgressBar progressBar = new JProgressBar(0, AI.allCombos.length);
+        JProgressBar progressBar = new JProgressBar(0, AI.getAllCombos().length);
         progressBar.setValue(0);
         progressBar.setStringPainted(true);
         progressBar.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -171,22 +171,21 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     myWriter = new PrintWriter("data.txt");
                     // test cases
                     int totalAttempts = 0;
-                    int[] attemptsArray = new int[AI.remainingCombos.length];
+                    int[] attemptsArray = new int[AI.getAllCombos().length];
                     int[] attemptsSort = new int[7];
 
-                    for (int i = 0; i < AI.allCombos.length; i++) {
+                    for (int i = 0; i < AI.getAllCombos().length; i++) {
 
-                        AI.remainingCombos = AI.allCombos.clone();
-
+                        AI.setRemainingCombos(AI.getAllCombos().clone());
                         int attempts = 1;
                         int blacks = -1;
                         int whites = -1;
 
                         do {
                             String[] code = AI.guessCombo(blacks, whites);
-                            printArray(code);
-                            String[] feedback = board.checkGuess(code, AI.allCombos[i], 0);
-                            printArray(feedback);
+                            saveArray(code);
+                            String[] feedback = board.checkGuess(code, AI.getAllCombos()[i]);
+                            saveArray(feedback);
                             int[] pegHolder = board.returnPegs(feedback);
                             blacks = pegHolder[1];
                             whites = pegHolder[0];
@@ -209,7 +208,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         progressBar.setValue(i);
                     }
 
-                    float avg = (float) totalAttempts / (float) AI.allCombos.length;
+                    float avg = (float) totalAttempts / (float) AI.getAllCombos().length;
 
                     int worstCase = 0;
 
@@ -434,7 +433,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         colors[i] = board.colorToString(guessColours[i].getBackground());
                     }
 
-                    String[] evaluation = board.checkGuess(colors, board.getCode(), attempts);
+                    String[] evaluation = board.checkGuess(colors, board.getCode());
                     int[] pegs = board.returnPegs(evaluation);
                     String[] feedback = new String[4];
                     for (int i = 0; i < pegs[0]; i++) {
@@ -940,16 +939,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
         return c;
     }
 
-    public static void printArray(String[] array) {
+    public static void saveArray(String[] array) {
         try {
             for (int j = 0; j < array.length; j++) {
-                System.out.print(array[j] + " ");
-
                 myWriter.write(array[j] + " ");
 
             }
-            System.out.println(" ");
-
             myWriter.write(System.lineSeparator());
         } catch (Exception e) {
             // TODO Auto-generated catch block
