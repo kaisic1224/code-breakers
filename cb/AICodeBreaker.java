@@ -11,14 +11,10 @@ public class AICodeBreaker {
 
     String[][] remainingCombos;
     String[][] allCombos;
-    String[][] nonGuessedCombos;
-
-    private int numPositions;
 
     // CONSTRUCTOR
-    public AICodeBreaker(int numPositions) {
+    public AICodeBreaker() {
 
-        this.numPositions = numPositions;
         board = new Board();
 
     }
@@ -32,7 +28,7 @@ public class AICodeBreaker {
     }
 
     // OITS NOT WORKEEY
-    String[] guessCombo(int black, int white) {
+    public String[] guessCombo(int black, int white) {
 
         // it's the first guess
         if (black == -1 && white == -1) {
@@ -47,7 +43,6 @@ public class AICodeBreaker {
 
                 if (remainingCombos[i].equals(lastGuess)) {
                     remainingCombos[i] = null;
-                    nonGuessedCombos[i] = null;
 
                 } else {
 
@@ -99,79 +94,6 @@ public class AICodeBreaker {
         return index;
     }
 
-    public ArrayList<String[]> miniMax() {
-
-        HashMap<int[], Integer> timesFound = new HashMap();
-        HashMap<String[], Integer> scores = new HashMap();
-        ArrayList<String[]> goodGuesses = new ArrayList<String[]>();
-
-        nonGuessedCombos = remainingCombos.clone();
-
-        for (int i = 0; i < nonGuessedCombos.length; i++) {
-
-            if (nonGuessedCombos[i] != null) {
-
-                for (int j = 0; j < remainingCombos.length; j++) {
-
-                    if (remainingCombos[j] != null) {
-                        String[] feedback = board.checkGuess(remainingCombos[j], nonGuessedCombos[i], 0);
-                        int[] pegHolder = board.returnPegs(feedback);
-
-                        if (timesFound.get(pegHolder) == null) {
-                            timesFound.put(pegHolder, 0);
-                        }
-
-                        timesFound.put(pegHolder, timesFound.get(pegHolder) + 1);
-                    }
-                }
-
-                int maxScore = (Collections.max(timesFound.values()));
-                scores.put(nonGuessedCombos[i], maxScore);
-            }
-
-        }
-
-        int minScore = (Collections.min(scores.values()));
-
-        for (int i = 0; i < nonGuessedCombos.length; i++) {
-
-            if (nonGuessedCombos[i] != null) {
-
-                if (scores.get(nonGuessedCombos[i]).equals(minScore)) {
-                    goodGuesses.add(nonGuessedCombos[i]);
-                }
-
-            }
-
-        }
-
-        return goodGuesses;
-        // make different diffcultities
-    }
-
-    public String[] bestGuess() {
-        ArrayList<String[]> goodCodes = miniMax();
-        String[] optimalGuess = getOptimalGuess(goodCodes);
-
-        return optimalGuess;
-    }
-
-    public String[] getOptimalGuess(ArrayList<String[]> goodCodes) {
-        for (int i = 0; i < goodCodes.size(); i++) {
-
-            for (int j = 0; j < remainingCombos.length; j++) {
-
-                if (goodCodes.get(i).equals(remainingCombos[j])) {
-                    return remainingCombos[j];
-                }
-
-            }
-
-        }
-
-        return goodCodes.get(0);
-    }
-
     public void generateAllCombos(int numPositions) {
 
         remainingCombos = new String[(int) Math.pow(Colour.values().length, numPositions)][numPositions];
@@ -195,7 +117,6 @@ public class AICodeBreaker {
         }
 
         allCombos = remainingCombos.clone();
-        nonGuessedCombos = remainingCombos.clone();
     }
 
     public void printRemainingCombos(int numPositions) {
