@@ -3,6 +3,10 @@ package cb;
 import java.io.*;
 import java.security.KeyStore.LoadStoreParameter;
 import java.util.*;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import cb.Board.Colour;
@@ -99,8 +103,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
         });
         backToMenu.setBackground(BUTTONCOLOUR);
 
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        backToMenu.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // ALIGN UI?
+        // title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // backToMenu.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         mainPanel.add(Box.createVerticalGlue());
         mainPanel.add(title);
@@ -123,7 +128,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         // init combo generation
         Board board = new Board();
-        AICodeBreaker AI = new AICodeBreaker(board.getSize());
+        AICodeBreaker AI = new AICodeBreaker();
         AI.generateAllCombos(board.getSize());
 
         // panel properites
@@ -169,7 +174,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     for (int i = 0; i < AI.allCombos.length; i++) {
 
                         AI.remainingCombos = AI.allCombos.clone();
-                        AI.nonGuessedCombos = AI.allCombos.clone();
 
                         int attempts = 1;
                         int blacks = -1;
@@ -368,7 +372,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
         submit.setBackground(BUTTONCOLOUR);
 
         clearAll.setEnabled(false);
-        submit.setEnabled(false);
 
         if (isCodeBreaker) {
             board.generateCode();
@@ -458,7 +461,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             });
 
         } else {
-            AI = new AICodeBreaker(board.getSize());
+            AI = new AICodeBreaker();
             AI.generateAllCombos(board.getSize());
 
             for (int i = 0; i < feedbackColours.length; i++) {
@@ -503,7 +506,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 public void actionPerformed(ActionEvent e) {
 
                     clearAll.setEnabled(false);
-                    submit.setEnabled(false);
 
                     displayColours.removeAll();
                     displayColours.revalidate();
@@ -546,7 +548,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
                 clearAll.setEnabled(false);
-                submit.setEnabled(false);
 
                 displayColours.removeAll();
                 displayColours.revalidate();
@@ -692,6 +693,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         LoadAssets();
         new CodeBreaker();
+        bgMusic();
 
     }
 
@@ -712,7 +714,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             String[] guess = AI.guessCombo(blacks, whites);
             // AI.printRemainingCombos(4);
             if (guess == null || attempts == board.getTries()) {
-                finalMessage("You have to be wrong!! :( )", null);
+                finalMessage("You have to be wrong!!", null);
             } else {
                 board.board[board.getTries() - 1 - attempts] = guess.clone();
                 revalidateBoard();
@@ -902,4 +904,22 @@ public class CodeBreaker extends JFrame implements ActionListener {
         }
     }
 
+    public static void bgMusic() {
+
+        try {
+
+            File musicPath = new File("./cb/assets/bgMusic.wav");
+            if (musicPath.exists()) {
+                AudioInputStream audioInput = AudioSystem.getAudioInputStream(musicPath);
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioInput);
+                clip.loop(Clip.LOOP_CONTINUOUSLY);
+
+            } else {
+                System.out.println("Music file does not exist");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }
