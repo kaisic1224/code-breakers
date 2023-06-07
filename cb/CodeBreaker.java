@@ -3,7 +3,9 @@ package cb;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.sound.sampled.AudioInputStream;
@@ -600,50 +602,152 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public static void userLogin(JFrame frame) {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        JPanel loginPanel = new JPanel();
-        loginPanel.add(Box.createVerticalGlue());
-
-        JPanel usernamePanel = new JPanel(new FlowLayout());
-        JLabel usernameLabel = new JLabel("Username: ");
-        JTextField username = new JTextField("", 20);
-        usernamePanel.add(usernameLabel);
-        usernamePanel.add(username);
-        loginPanel.add(usernamePanel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
-
-        JPanel passwordPanel = new JPanel(new FlowLayout());
-        JLabel passwordLabel = new JLabel("Password: ");
-        JTextField password = new JTextField("", 20);
-        passwordPanel.add(passwordLabel);
-        passwordPanel.add(password);
-        loginPanel.add(passwordPanel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
-
-        JButton submitLogin = new JButton("Login");
-        JLabel errorText = new JLabel("");
-        submitLogin.addActionListener(new ActionListener() {
+        JButton backtoMenu = new JButton("Return to menu");
+        backtoMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String verified = null;
-                try {
-                    verified = login(username.getText(), password.getText());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    errorText.setText(ex.getMessage());
-                }
-                if (verified.equals(username.getText())) {
-                    frame.setVisible(false);
-                    sessionName = verified;
-                    new CodeBreaker();
-                }
+                new CodeBreaker();
+                frame.setVisible(false);
             }
         });
-        loginPanel.add(submitLogin);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
 
-        loginPanel.add(errorText);
+        if (sessionName == null) {
+            JPanel loginPanel = new JPanel(new GridBagLayout());
+            loginPanel.setBackground(BGCOLOURORANGE);
+            loginPanel.setOpaque(true);
 
-        frame.add(loginPanel);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.anchor = GridBagConstraints.NORTH;
+            c.fill = GridBagConstraints.NONE;
+            c.weightx = 0;
+
+            JPanel hero = new JPanel();
+            hero.setBackground(BGCOLOURORANGE);
+            hero.setOpaque(true);
+            hero.setLayout(new BoxLayout(hero, BoxLayout.Y_AXIS));
+            Image logo = new ImageIcon("./cb/assets/logo.png").getImage();
+            JLabel heroLogo = new JLabel(new ImageIcon(logo.getScaledInstance(600, 374, Image.SCALE_FAST)),
+                    JLabel.CENTER);
+            hero.add(heroLogo);
+            loginPanel.add(hero, c);
+
+            JPanel usernamePanel = new JPanel(new FlowLayout());
+            usernamePanel.setBackground(BGCOLOURORANGE);
+            usernamePanel.setOpaque(true);
+            JLabel usernameLabel = new JLabel("Username: ");
+            JTextField username = new JTextField("", 20);
+            username.setMaximumSize(MENUBUTTONSIZE);
+            usernamePanel.add(usernameLabel);
+            usernamePanel.add(username);
+            c.gridy = 1;
+            loginPanel.add(usernamePanel, c);
+            loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
+
+            JPanel passwordPanel = new JPanel(new FlowLayout());
+            passwordPanel.setBackground(BGCOLOURORANGE);
+            passwordPanel.setOpaque(true);
+            JLabel passwordLabel = new JLabel("Password: ");
+            JTextField password = new JTextField("", 20);
+            password.setMaximumSize(MENUBUTTONSIZE);
+            passwordPanel.add(passwordLabel);
+            passwordPanel.add(password);
+            c.gridy = 2;
+            loginPanel.add(passwordPanel, c);
+            loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
+
+            JLabel errorText = new JLabel("");
+            errorText.setForeground(Color.RED);
+            errorText.setBackground(BGCOLOURORANGE);
+            errorText.setOpaque(true);
+            JButton submitLogin = new JButton("Login");
+            submitLogin.setMaximumSize(MENUBUTTONSIZE);
+            submitLogin.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    String verified = null;
+                    try {
+                        verified = login(username.getText(), password.getText());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        errorText.setText(ex.getMessage());
+                    }
+                    if (verified.equals(username.getText())) {
+                        frame.setVisible(false);
+                        sessionName = verified;
+                        new CodeBreaker();
+                    }
+                }
+            });
+
+            c.gridy = 3;
+            loginPanel.add(submitLogin, c);
+
+            c.gridy = 4;
+            loginPanel.add(errorText, c);
+
+            c.gridy = 5;
+            loginPanel.add(backtoMenu, c);
+
+            frame.add(loginPanel);
+        } else {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader("./cb/accounts/" + sessionName + ".txt"));
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            int totalTurns = 0;
+            int totalGames = 0;
+            int totalWins = 0;
+            String line = null;
+            try {
+                line = br.readLine();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            while (line != null) {
+                totalGames++;
+                int turns = Integer.parseInt(line);
+                totalTurns += turns;
+                if (turns < 10) {
+                    totalWins++;
+                }
+
+                try {
+                    line = br.readLine();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                br.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            DecimalFormat df = new DecimalFormat("0.00");
+            JPanel stats = new JPanel();
+            JLabel lifetimeTurnLabel = new JLabel("Lifetime turns: " + totalTurns);
+            JLabel lifetimeGameLabel = new JLabel("Lifetime games: " + totalGames);
+            JLabel lifetimeWinsLabel = new JLabel("Lifetime wins: " + totalWins);
+            JLabel averageTurns = new JLabel("Average attempts: " + (df.format(totalTurns / totalGames)));
+
+            stats.add(lifetimeTurnLabel);
+            stats.add(lifetimeGameLabel);
+            stats.add(lifetimeWinsLabel);
+            stats.add(averageTurns);
+            stats.add(backtoMenu);
+
+            frame.add(stats);
+
+        }
 
         frame.pack();
         frame.setVisible(true);
@@ -766,6 +870,24 @@ public class CodeBreaker extends JFrame implements ActionListener {
             session.setText("Currently logged in as: " + sessionName);
         }
 
+        JButton leaderboardBtn = new JButton("LEADERBOARDS", arrowImg);
+        leaderboardBtn.setBackground(BUTTONCOLOUR);
+        leaderboardBtn.setFont(ForeverFontBold);
+        leaderboardBtn.setHorizontalTextPosition(JButton.LEFT);
+        leaderboardBtn.setMaximumSize(MENUBUTTONSIZE);
+
+        leaderboardBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFrame leaderboardFrame = new JFrame("Code Breakers | Leaderboard");
+                try {
+                    leaderboard(leaderboardFrame);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                setVisible(false);
+            }
+        });
+
         // add to buttons panel
         buttons.add(session);
         buttons.add(aiPlay);
@@ -777,6 +899,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         buttons.add(aiStats);
         buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
         buttons.add(login);
+        buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
+        buttons.add(leaderboardBtn);
 
         // setbackgorund colours
         hero.setBackground(BGCOLOURORANGE);
@@ -803,9 +927,20 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         if (blacks == board.getSize()) {
             finalMessage("YOU WIN in " + (attempts) + " guesses! ", code);
+
         } else if (attempts == board.getTries()) {
             finalMessage("YOU LOSE! (no more attempts) ", code);
+            if (sessionName != null) {
+                try {
+                    saveToFile(sessionName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // TODO: prompt login
+            }
         }
+
     }
 
     public static void playerIsCodeSetter(int blacks, int whites, String[] code) {
@@ -889,12 +1024,105 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     }
 
-    public static void leaderboard(JFrame frame) {
+    public static void leaderboard(JFrame frame) throws IOException {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         JPanel mainPanel = new JPanel();
+        JPanel leaderCharts = new JPanel(new GridLayout(10, 1));
 
+        BufferedReader fr = new BufferedReader(new FileReader("./cb/accounts/records.txt"));
+        String[] records = new String[50];
+        String line = fr.readLine();
+        int i = 0;
+        while (line != null) {
+            records[i] = line;
+            i++;
+            line = fr.readLine();
+        }
+        for (int j = 0; j < records.length; j++) {
+            if (records[j] == null) {
+                records[j] = " ,11, , ";
+            }
+        }
+
+        // Use a bubble sort, but in order to preserve the rest of the information and
+        // not just sort the scores, we have to compare just the scores, then switch
+        // each entire string's position
+        boolean isSorted = true;
+        for (int k = 0; k < records.length - 1; k++) {
+            for (int j = 0; j < ((records.length - 1) - k); j++) {
+                // All game records are stored as account,score,timestamp
+                // We have to only compare records, but switch the entire strings, so we have to
+                // split each string by commas, and access the 2nd element in each array of
+                // substrings which would be the score. We convert it to integer and compare
+                // with one another
+                if (Integer.parseInt(records[j].split(",")[1]) > Integer.parseInt(records[j + 1].split(",")[1])) {
+                    isSorted = false;
+                    // Swap positions with each other
+                    String temp = records[j];
+                    records[j] = records[j + 1];
+                    records[j + 1] = temp;
+                } else if (records[j].split(",")[1].equals(records[j + 1].split(",")[1])
+                        && Integer.parseInt(records[j].split(",")[1]) < 11) {
+                    // Also try comparing dates with each other, but only if both records are equal,
+                    // and the score is not invalid (-1).
+                    LocalDateTime date1 = LocalDateTime.parse(records[j].split(",")[2]);
+                    LocalDateTime date2 = LocalDateTime.parse(records[j + 1].split(",")[2]);
+                    // If the date in front happened later than the one before, then move it in
+                    // front as we want the most recent dates to be on the top of the leaderboard
+                    if (date2.isAfter(date1)) {
+                        String temp = records[j];
+                        records[j] = records[j + 1];
+                        records[j + 1] = temp;
+                    }
+                }
+            }
+            if (isSorted) {
+                break;
+            } else {
+                isSorted = true;
+            }
+        }
+
+        // only first 10 records
+        for (int j = 0; j < 10; j++) {
+            JPanel recordRow = new JPanel();
+            String[] log = records[j].split(",");
+            JLabel user = new JLabel(log[0]);
+            JLabel score = new JLabel(log[1]);
+            JLabel date = !log[2].equals(" ")
+                    ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+                    : new JLabel();
+            recordRow.add(user);
+            recordRow.add(score);
+            recordRow.add(date);
+            recordRow.setOpaque(true);
+            System.out.println(log[0]);
+            if (log[0].equals(sessionName)) {
+                recordRow.setBackground(Color.ORANGE);
+            }
+
+            leaderCharts.add(recordRow);
+        }
+
+        mainPanel.add(leaderCharts);
+        JButton backToMenu = new JButton("Back to Menu");
+        backToMenu.setFont(ForeverFontBold);
+        backToMenu.setHorizontalTextPosition(JButton.LEFT);
+        backToMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
+
+                new CodeBreaker();
+                frame.setVisible(false);
+            }
+        });
+        backToMenu.setBackground(BUTTONCOLOUR);
+
+        mainPanel.add(backToMenu);
+        frame.add(mainPanel);
         frame.pack();
         frame.setVisible(true);
+        fr.close();
     }
 
     public static String getPassword(String accountName) throws Exception {
@@ -942,9 +1170,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 String pwdHash = getPassword(accountName);
                 String attemptHashString = "";
                 for (int i = 0; i < attemptHash.length; i++) {
-                    attemptHashString+=attemptHash[i];
-                    if (i != attemptHash.length-1)
-                    attemptHashString+=".";
+                    attemptHashString += attemptHash[i];
+                    if (i != attemptHash.length - 1)
+                        attemptHashString += ".";
                 }
                 if (attemptHashString.equals(pwdHash)) {
                     System.out.println("\nSuccessfully logged in as " + line.split(",")[0]);
@@ -956,7 +1184,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     pw.close();
                     br.close();
                     aw.close();
-                    throw new Exception("Wrong password inputted!");
+                    throw new Exception("Wrong password!");
                 }
             } else {
                 // Otherwise keep searching
@@ -982,7 +1210,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
     }
 
     public static void saveToFile(String accountName) throws Exception {
-        login(accountName, accountName);
         File account = new File("./cb/accounts/" + accountName + ".txt");
         if (!account.exists()) {
             account.createNewFile();
@@ -993,7 +1220,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
         LocalDateTime ld = LocalDateTime.now();
 
         aw.println(attempts);
-        pw.println(accountName + "," + attempts + "," + ld);
+        String code = String.join("", board.getCode());
+        pw.println(accountName + "," + attempts + "," + ld + "," + code);
 
         aw.close();
         pw.close();
@@ -1048,6 +1276,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         if (code != null) {
             JLabel codeHeader = new JLabel("The code to guess was:");
             codeHeader.setFont(ForeverFontNormal);
+            codeHeader.setHorizontalAlignment(JLabel.CENTER);
             feedbackPanel.add(codeHeader);
 
             JPanel displayColours = new JPanel(new FlowLayout());
@@ -1081,6 +1310,34 @@ public class CodeBreaker extends JFrame implements ActionListener {
         feedbackPanel.add(backToMenu);
 
         feedbackPanel.add(Box.createVerticalGlue());
+        feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
+        JPanel sessionPanel = new JPanel(new GridBagLayout());
+        JLabel sessionLabel = new JLabel();
+        JButton login = new JButton("Sign in");
+        login.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFrame loginFrame = new JFrame("Code Breakers | Login");
+                userLogin(loginFrame);
+                gameFrame.setVisible(false);
+
+            }
+        });
+        sessionPanel.add(sessionLabel);
+        sessionLabel.setHorizontalAlignment(JLabel.CENTER);
+        if (sessionName == null) {
+            sessionLabel.setText("Not currently signed in");
+            sessionLabel.setBorder(new EmptyBorder(0, 0, 0, 20));
+            sessionPanel.add(login);
+        } else {
+            sessionLabel.setText("Currently signed in as: " + sessionName);
+            try {
+                saveToFile(sessionName);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        feedbackPanel.add(sessionPanel);
 
         feedbackPanel.revalidate();
         boardPanel.revalidate();
