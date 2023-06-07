@@ -82,25 +82,35 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static JPanel displayColours;
     public static JTextField name;
     public static JFrame gameFrame;
+    public static JLabel sessionLabel;
+    public static JPanel sessionPanel;
+    public static JButton login;
 
     // account logging in
     public static String sessionName;
 
+    /**
+     * Loads all static assets that are reused in multiple places
+     * 
+     * @param none
+     * 
+     * @return nothing
+     */
     public static void LoadAssets() {
-        File records = new File("./cb/accounts/records.txt");
+        File records = new File("./cb/accounts/records.txt"); // path to all previous game records
         if (!records.exists()) {
             try {
-                records.createNewFile();
+                records.createNewFile(); // create a new file if it doesnt exist
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         try {
-            ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Forever.ttf"));
+            ForeverFont = Font.createFont(Font.TRUETYPE_FONT, new File("./cb/assets/Forever.ttf")); // load in font
         } catch (Exception e) {
             System.out.println("File could not be found, or error parsing font");
         }
-        ForeverFontBold = ForeverFont.deriveFont(Font.BOLD, 16f);
+        ForeverFontBold = ForeverFont.deriveFont(Font.BOLD, 16f); // create font varations from font
         ForeverFontNormal = ForeverFont.deriveFont(16f);
         ForeverFontTitle = ForeverFont.deriveFont(Font.BOLD, 50f);
     }
@@ -556,6 +566,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 colourPicker.add(peg); // add the peg to the colour picker panel
             }
 
+            submit.setEnabled(false);
             // add an action listener to the submit button
             submit.addActionListener(new ActionListener() {
 
@@ -763,17 +774,29 @@ public class CodeBreaker extends JFrame implements ActionListener {
         frame.setVisible(true); // frame is visible to user
     }
 
-    public static void userLogin(JFrame frame) {
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+    /**
+     * Handles all of the repainting and content for the login page including action
+     * listeners. Allows the user to login to an existing account from an encrypted
+     * passwod stored in the accounts file or create a new account.
+     * 
+     * @param frame     - the frame created to hold and handle all of the rendering
+     *                  of this frame
+     * @param prevFrame - the frame that was open before this to allow the ability
+     *                  to have a popup like signin
+     * 
+     * @return nothing
+     */
+    public static void userLogin(JFrame frame, JFrame prevFrame) {
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // set frame to take up both spots
         JButton backtoMenu = new JButton("Return to menu");
-        backtoMenu.addActionListener(new ActionListener() {
+        backtoMenu.addActionListener(new ActionListener() { // return to menu button
             public void actionPerformed(ActionEvent e) {
-                new CodeBreaker();
+                new CodeBreaker(); // simply open back main menu and set this one to invisible
                 frame.setVisible(false);
             }
         });
 
-        if (sessionName == null) {
+        if (sessionName == null) { // if the user is not logged in, display a seperate page for them
             JPanel loginPanel = new JPanel(new GridBagLayout());
             loginPanel.setBackground(BGCOLOURORANGE);
             loginPanel.setOpaque(true);
@@ -785,7 +808,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
             c.fill = GridBagConstraints.NONE;
             c.weightx = 0;
 
-            JPanel hero = new JPanel();
+            JPanel hero = new JPanel(); // hero panel image for holding the logo
             hero.setBackground(BGCOLOURORANGE);
             hero.setOpaque(true);
             hero.setLayout(new BoxLayout(hero, BoxLayout.Y_AXIS));
@@ -793,12 +816,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
             JLabel heroLogo = new JLabel(new ImageIcon(logo.getScaledInstance(600, 374, Image.SCALE_FAST)),
                     JLabel.CENTER);
             hero.add(heroLogo);
-            loginPanel.add(hero, c);
+            loginPanel.add(hero, c); // add it to the layout
 
-            JPanel usernamePanel = new JPanel(new FlowLayout());
+            JPanel usernamePanel = new JPanel(new FlowLayout()); // create an area that allows the user to enter a
+                                                                 // username
             usernamePanel.setBackground(BGCOLOURORANGE);
             usernamePanel.setOpaque(true);
-            JLabel usernameLabel = new JLabel("Username: ");
+            JLabel usernameLabel = new JLabel("Username: "); // labels so user knows which text field is for which
             JTextField username = new JTextField("", 20);
             username.setMaximumSize(MENUBUTTONSIZE);
             usernamePanel.add(usernameLabel);
@@ -807,10 +831,11 @@ public class CodeBreaker extends JFrame implements ActionListener {
             loginPanel.add(usernamePanel, c);
             loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
 
-            JPanel passwordPanel = new JPanel(new FlowLayout());
+            JPanel passwordPanel = new JPanel(new FlowLayout()); // create an area that allows the user to enter a
+                                                                 // password
             passwordPanel.setBackground(BGCOLOURORANGE);
             passwordPanel.setOpaque(true);
-            JLabel passwordLabel = new JLabel("Password: ");
+            JLabel passwordLabel = new JLabel("Password: "); // labels so user knows which text field is for which
             JTextField password = new JTextField("", 20);
             password.setMaximumSize(MENUBUTTONSIZE);
             passwordPanel.add(passwordLabel);
@@ -819,25 +844,41 @@ public class CodeBreaker extends JFrame implements ActionListener {
             loginPanel.add(passwordPanel, c);
             loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
 
-            JLabel errorText = new JLabel("");
+            JLabel errorText = new JLabel(""); // create a text for handling custom exceptions thrown and display it to
+                                               // the user
             errorText.setForeground(Color.RED);
             errorText.setBackground(BGCOLOURORANGE);
             errorText.setOpaque(true);
-            JButton submitLogin = new JButton("Login");
+            JButton submitLogin = new JButton("Login"); // create a button to submit the login information
             submitLogin.setMaximumSize(MENUBUTTONSIZE);
             submitLogin.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    String verified = null;
+                    String verified = null; // will change to their account name if they successfully login with the
+                                            // correct password
                     try {
-                        verified = login(username.getText(), password.getText());
+                        verified = login(username.getText(), password.getText()); // will check if their login is
+                                                                                  // successful
                     } catch (Exception ex) {
                         ex.printStackTrace();
-                        errorText.setText(ex.getMessage());
+                        errorText.setText(ex.getMessage()); // display any errors to the user
                     }
-                    if (verified.equals(username.getText())) {
+                    if (verified.equals(username.getText())) { // if their login is successful
                         frame.setVisible(false);
-                        sessionName = verified;
-                        new CodeBreaker();
+                        sessionName = verified; // update instance variable for session
+                        if (prevFrame == null) {
+                            new CodeBreaker(); // return user to main menu
+                        } else {
+                            prevFrame.setVisible(true);
+                            sessionLabel.setText("Currently signed in as: " + sessionName);
+                            sessionPanel.remove(login);
+                            sessionPanel.revalidate();
+                            sessionPanel.repaint();
+                            try {
+                                saveToFile(sessionName);
+                            } catch (Exception e1) {
+                                e1.printStackTrace();
+                            }
+                        }
                     }
                 }
             });
@@ -853,14 +894,16 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             frame.add(loginPanel);
         } else {
+            // if user has an existing session
             BufferedReader br = null;
             try {
-                br = new BufferedReader(new FileReader("./cb/accounts/" + sessionName + ".txt"));
+                br = new BufferedReader(new FileReader("./cb/accounts/" + sessionName + ".txt")); // read from all
+                                                                                                  // existing accounts
             } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
+            // start declaring stat values
             int totalTurns = 0;
             int totalGames = 0;
             int totalWins = 0;
@@ -868,36 +911,33 @@ public class CodeBreaker extends JFrame implements ActionListener {
             try {
                 line = br.readLine();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
-            while (line != null) {
-                totalGames++;
-                int turns = Integer.parseInt(line);
+            while (line != null) { // read through each value in their specified game file
+                totalGames++; // tally their games played
+                int turns = Integer.parseInt(line); // tally the number of turns they take
                 totalTurns += turns;
-                if (turns < 10) {
-                    totalWins++;
+                if (turns < 11) {
+                    totalWins++; // wins only count if they win within 10 guesses
                 }
 
                 try {
-                    line = br.readLine();
+                    line = br.readLine(); // read the next line
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
 
             try {
-                br.close();
+                br.close(); // close to prevent memory leaks
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
-            DecimalFormat df = new DecimalFormat("0.00");
+            DecimalFormat df = new DecimalFormat("0.00"); // create decimal formatter
             JPanel stats = new JPanel();
-            JLabel lifetimeTurnLabel = new JLabel("Lifetime turns: " + totalTurns);
+            JLabel lifetimeTurnLabel = new JLabel("Lifetime turns: " + totalTurns); // display stats to user
             JLabel lifetimeGameLabel = new JLabel("Lifetime games: " + totalGames);
             JLabel lifetimeWinsLabel = new JLabel("Lifetime wins: " + totalWins);
             JLabel averageTurns = new JLabel("Average attempts: " + (df.format(totalTurns / totalGames)));
@@ -908,12 +948,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
             stats.add(averageTurns);
             stats.add(backtoMenu);
 
-            frame.add(stats);
+            frame.add(stats); // add stats to frame
 
         }
 
         frame.pack();
-        frame.setVisible(true);
+        frame.setVisible(true); // set frame so the user can see
     }
 
     /**
@@ -1045,7 +1085,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         login.addActionListener(new ActionListener() { // if we press this button
             public void actionPerformed(ActionEvent e) {
                 JFrame loginFrame = new JFrame("Code Breakers | Login"); // load up the login page
-                userLogin(loginFrame); // call userLogin to display login GUI
+                userLogin(loginFrame, null); // call userLogin to display login GUI
                 setVisible(false); // hide current frame
             }
         });
@@ -1269,19 +1309,27 @@ public class CodeBreaker extends JFrame implements ActionListener {
     }
 
     public static void leaderboard(JFrame frame) throws IOException {
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        JPanel mainPanel = new JPanel();
-        JPanel leaderCharts = new JPanel(new GridLayout(10, 1));
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // set frame to fill screen
+        JPanel mainPanel = new JPanel(); // basic styles
+        mainPanel.setOpaque(true);
+        mainPanel.setBackground(BGCOLOURORANGE);
+        JPanel leaderCharts = new JPanel(new GridLayout(10, 1)); // leadercharts holds the top 10 records by score and
+                                                                 // date
 
-        BufferedReader fr = new BufferedReader(new FileReader("./cb/accounts/records.txt"));
-        String[] records = new String[50];
+        BufferedReader fr = new BufferedReader(new FileReader("./cb/accounts/records.txt")); // read from the file
+                                                                                             // containnig history of
+                                                                                             // all games and their
+                                                                                             // dates/turn
+        String[] records = new String[50]; // create an array to hold a generic number of records
         String line = fr.readLine();
         int i = 0;
         while (line != null) {
-            records[i] = line;
+            records[i] = line; // assign to records value
             i++;
             line = fr.readLine();
         }
+        // if the line is currently null, assign it to values which can be sorted but
+        // not have to be dealt with
         for (int j = 0; j < records.length; j++) {
             if (records[j] == null) {
                 records[j] = " ,11, , ";
@@ -1333,15 +1381,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
             String[] log = records[j].split(",");
             JLabel user = new JLabel(log[0]);
             JLabel score = new JLabel(log[1]);
-            JLabel date = !log[2].equals(" ")
+            JLabel date = !log[2].equals(" ") // if the date is not empty, then create a datetime of the given date -
+                                              // otherwise just create an empty jlabel
                     ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
                     : new JLabel();
-            recordRow.add(user);
+            recordRow.add(user); // add all information in each row
             recordRow.add(score);
             recordRow.add(date);
             recordRow.setOpaque(true);
-            System.out.println(log[0]);
-            if (log[0].equals(sessionName)) {
+            if (log[0].equals(sessionName)) { // highlight records that belong to the user
                 recordRow.setBackground(Color.ORANGE);
             }
 
@@ -1349,12 +1397,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
         }
 
         mainPanel.add(leaderCharts);
-        JButton backToMenu = new JButton("Back to Menu");
+        JButton backToMenu = new JButton("Back to Menu"); // create btn to allow user to travel back to the main menu
         backToMenu.setFont(ForeverFontBold);
         backToMenu.setHorizontalTextPosition(JButton.LEFT);
         backToMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                music(false, "./cb/assets/sounds/pop.wav");
+                music(false, "./cb/assets/sounds/pop.wav"); // use the sound effect when clicked
 
                 new CodeBreaker();
                 frame.setVisible(false);
@@ -1362,31 +1410,52 @@ public class CodeBreaker extends JFrame implements ActionListener {
         });
         backToMenu.setBackground(BUTTONCOLOUR);
 
-        mainPanel.add(backToMenu);
+        mainPanel.add(backToMenu); // add panels and buttons back to menu
         frame.add(mainPanel);
         frame.pack();
         frame.setVisible(true);
-        fr.close();
+        fr.close(); // close file reader
     }
 
+    /**
+     * Given a user's account name, search for their encrypted password stored in
+     * bytes in the accounts file and return it once found
+     * 
+     * @param accountName - the name of the account to find the password for
+     * @return - the bytes to the encrypted password, seperated by '.'
+     * @throws Exception - Throw a file not found error or error in case it cannot
+     *                   read from the acccounts file
+     */
     public static String getPassword(String accountName) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader("./cb/accounts/accounts.txt"));
 
-        String line = br.readLine();
+        String line = br.readLine(); // read from accounts file
         while (line != null) {
-            String[] accountInfo = line.split(",");
-            if (accountInfo[0].equals(accountName)) {
+            String[] accountInfo = line.split(","); // split information into its parts so that, {accountName, password}
+                                                    // is the format of the data inside the file
+            if (accountInfo[0].equals(accountName)) { // if the requested name has a spot in the file
                 br.close();
-                return accountInfo[1];
+                return accountInfo[1]; // return their password to them
             }
 
-            line = br.readLine();
+            line = br.readLine(); // otherwise continue searching
         }
 
         br.close();
-        return null;
+        return null; // return null if the account does not exist
     }
 
+    /**
+     * A function that will attempt to log a user in, or create an account for them.
+     * Will throw errors on accounts that cannot be created well including already
+     * taken names, or wrong passwords
+     * 
+     * @param accountName - the username of the account to login/create
+     * @param attemptPwd  - the password of the account to login/create
+     * @return - the username of the account that was successfuly logged in/created
+     * @throws Exception - throws an error if the account already exists, or the
+     *                   wrong password is entered
+     */
     public static String login(String accountName, String attemptPwd) throws Exception {
         File account = new File("./cb/accounts/" + accountName + ".txt");
         PrintWriter aw = new PrintWriter(new FileWriter(account, true));
@@ -1412,13 +1481,14 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 // If their account can be found, then tell them they have logged in and return
                 // their name
                 String pwdHash = getPassword(accountName);
-                String attemptHashString = "";
+                String attemptHashString = ""; // password identification
                 for (int i = 0; i < attemptHash.length; i++) {
                     attemptHashString += attemptHash[i];
                     if (i != attemptHash.length - 1)
                         attemptHashString += ".";
                 }
-                if (attemptHashString.equals(pwdHash)) {
+                if (attemptHashString.equals(pwdHash)) { // if their hashed attempted password matches the one n the
+                                                         // file, return their username
                     System.out.println("\nSuccessfully logged in as " + line.split(",")[0]);
                     pw.close();
                     br.close();
@@ -1428,7 +1498,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     pw.close();
                     br.close();
                     aw.close();
-                    throw new Exception("Wrong password!");
+                    throw new Exception("Wrong password!"); // throw an error if it does not
                 }
             } else {
                 // Otherwise keep searching
@@ -1439,7 +1509,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // couldn't be found in the game records and let them know they created an
         // account
         System.out.println("\nSuccessfully created account: " + accountName + " with password: " + attemptPwd);
-        String formattedStoredPassword = "";
+        String formattedStoredPassword = ""; // store their password in the format of 'byte.byte.byte...'
         for (int i = 0; i < attemptHash.length; i++) {
             formattedStoredPassword += attemptHash[i];
             if (i != attemptHash.length - 1)
@@ -1453,40 +1523,42 @@ public class CodeBreaker extends JFrame implements ActionListener {
         return accountName;
     }
 
+    /**
+     * Saves the game record to their file and in the records file
+     * 
+     * @param accountName - the name of the account the record belongs to
+     * @throws Exception - File not found exceptions, or error writing to the files
+     * 
+     * @return nothing
+     */
     public static void saveToFile(String accountName) throws Exception {
-        File account = new File("./cb/accounts/" + accountName + ".txt");
+        File account = new File("./cb/accounts/" + accountName + ".txt"); // open their account
         if (!account.exists()) {
-            account.createNewFile();
+            account.createNewFile(); // create their file if it doesn't already exist
         }
-        PrintWriter aw = new PrintWriter(new FileWriter(account, true));
+        PrintWriter aw = new PrintWriter(new FileWriter(account, true)); // writer for the account
         File records = new File("./cb/accounts/records.txt");
-        PrintWriter pw = new PrintWriter(new FileWriter(records, true));
-        LocalDateTime ld = LocalDateTime.now();
+        PrintWriter pw = new PrintWriter(new FileWriter(records, true)); // writer for the record of all games history
+        LocalDateTime ld = LocalDateTime.now(); // create current timestamp
 
         aw.println(attempts);
-        String code = String.join("", board.getCode());
+        String code = String.join("", board.getCode()); // store the game winning code in the record
         pw.println(accountName + "," + attempts + "," + ld + "," + code);
 
-        aw.close();
+        aw.close(); // close any objects to prevent memory leaks
         pw.close();
     }
 
-    public static String getRecord(String[] accountName) throws IOException {
-        File account = new File("./cb/accounts/" + accountName + ".txt");
-        BufferedReader br = new BufferedReader(new FileReader(account));
-
-        String line = br.readLine();
-        while (line != null) {
-            br.close();
-            return line;
-        }
-        br.close();
-        return null;
-
-    }
-
+    /**
+     * Displays the final winning message if the user wins or loses.
+     * 
+     * @param message - the message to disply to the user
+     * @param code    - the winning code of the boards game
+     * 
+     * @return nothing
+     */
     public static void finalMessage(String message, String[] code) {
-        feedbackPanel.removeAll();
+        feedbackPanel.removeAll(); // empty out display first and clear everything
         boardPanel.removeAll();
         colourPicker.removeAll();
         displayColours.removeAll();
@@ -1495,38 +1567,22 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         // save the game
         JLabel display = new JLabel(message);
-        name = new JTextField("Enter your account name");
-        JButton saveRecord = new JButton("Save the game to a file");
-        saveRecord.setBackground(BUTTONCOLOUR);
 
-        saveRecord.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                music(false, POPPATH);
-
-                try {
-                    saveToFile(name.getText());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                new CodeBreaker();
-                gameFrame.setVisible(false);
-            }
-        });
-
+        // create main message title header
         display.setFont(ForeverFontTitle);
         feedbackPanel.add(display);
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
 
-        if (code != null) {
+        if (code != null) { // for code breaker mode
             JLabel codeHeader = new JLabel("The code to guess was:");
             codeHeader.setFont(ForeverFontNormal);
             codeHeader.setHorizontalAlignment(JLabel.CENTER);
             feedbackPanel.add(codeHeader);
 
-            JPanel displayColours = new JPanel(new FlowLayout());
+            JPanel displayColours = new JPanel(new FlowLayout()); // display all the colours in the code
 
             for (int i = 0; i < code.length; i++) {
-                JLabel colour = new JLabel("");
+                JLabel colour = new JLabel(""); // display colours in the board code
                 colour.setPreferredSize(new Dimension(50, 50));
                 colour.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 colour.setOpaque(true);
@@ -1534,17 +1590,17 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 displayColours.add(colour);
             }
 
-            feedbackPanel.add(displayColours);
+            feedbackPanel.add(displayColours); // add the code to the frame
         }
 
-        JButton backToMenu = new JButton("Back to Menu");
+        JButton backToMenu = new JButton("Back to Menu"); // create a button for returning to home
         backToMenu.setFont(ForeverFontBold);
         backToMenu.setHorizontalTextPosition(JButton.LEFT);
         backToMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                music(false, POPPATH);
+                music(false, POPPATH); // soundfx
 
-                new CodeBreaker();
+                new CodeBreaker(); // display main menu and hide current menu
                 gameFrame.setVisible(false);
             }
         });
@@ -1555,25 +1611,29 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         feedbackPanel.add(Box.createVerticalGlue());
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
-        JPanel sessionPanel = new JPanel(new GridBagLayout());
-        JLabel sessionLabel = new JLabel();
-        JButton login = new JButton("Sign in");
+
+        sessionPanel = new JPanel(new GridBagLayout()); // create panel for identifying if the user has a session
+                                                               // or not (is logged in or not)
+        sessionLabel = new JLabel();
+        login = new JButton("Sign in"); // button for redirecting user to login panel
         login.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame loginFrame = new JFrame("Code Breakers | Login");
-                userLogin(loginFrame);
+                userLogin(loginFrame, gameFrame);
                 gameFrame.setVisible(false);
 
             }
         });
         sessionPanel.add(sessionLabel);
         sessionLabel.setHorizontalAlignment(JLabel.CENTER);
-        if (sessionName == null) {
+        if (sessionName == null) { // if the user does not have a session ongoing
             sessionLabel.setText("Not currently signed in");
             sessionLabel.setBorder(new EmptyBorder(0, 0, 0, 20));
-            sessionPanel.add(login);
+            sessionPanel.add(login); // add the button to the game
         } else {
-            sessionLabel.setText("Currently signed in as: " + sessionName);
+            sessionLabel.setText("Currently signed in as: " + sessionName); // otherwise let them know which account
+                                                                            // they are logged in and save their file to
+                                                                            // record
             try {
                 saveToFile(sessionName);
             } catch (Exception e1) {
@@ -1583,27 +1643,32 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         feedbackPanel.add(sessionPanel);
 
-        feedbackPanel.revalidate();
+        feedbackPanel.revalidate(); // revaidate updated ui
         boardPanel.revalidate();
         colourPicker.revalidate();
         displayColours.revalidate();
 
-        feedbackPanel.repaint();
+        feedbackPanel.repaint(); // repaint updated ui
         boardPanel.repaint();
         colourPicker.repaint();
         displayColours.repaint();
 
     }
 
+    /**
+     * Takes in the name of a colour, ex. cyan, red, white, etc. and returns the associated java.awt.color value of it
+     * @param colourName - the string name of the colour
+     * @return           - the Color equivalent to a string
+     */
     public static Color stringToColor(String colourName) {
         Color c = null;
         try {
-            c = (Color) Color.class.getField(colourName).get(null);
+            c = (Color) Color.class.getField(colourName).get(null); // looking through each field in the Color class
 
         } catch (Exception ex) {
             ex.printStackTrace();
             if (colourName != null)
-                c = Color.decode(colourName);
+                c = Color.decode(colourName); // or alternatively use for hx codes
         }
         return c;
     }
