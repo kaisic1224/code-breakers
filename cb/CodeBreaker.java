@@ -1407,19 +1407,22 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         }
 
-        JLabel chartHeader = new JLabel("User       Attempts           Date");
+        JLabel chartHeader = new JLabel("User     Attempts         Date");
         chartHeader.setFont(ForeverFontTitle);
         leaderCharts.add(chartHeader);
         // only first 10 records
         for (int j = 0; j < 10; j++) {
             JPanel recordRow = new JPanel();
             String[] log = records[j].split(",");
+            if (Integer.parseInt(log[1]) > 10) {
+                log[1] = "";
+            }
             JLabel user = new JLabel(log[0]);
-            user.setBorder(new EmptyBorder(0, 0, 0, 360));
+            user.setBorder(new EmptyBorder(0, 0, 0, 300));
             user.setFont(ForeverFontTitle);
             JLabel score = new JLabel(log[1]);
             score.setFont(ForeverFontTitle);
-            score.setBorder(new EmptyBorder(0, 0, 0, 360));
+            score.setBorder(new EmptyBorder(0, 0, 0, 300));
             JLabel date = !log[2].equals(" ") // if the date is not empty, then create a datetime of the given date -
             // otherwise just create an empty jlabel
             ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
