@@ -6,7 +6,7 @@
 //Our program has two required modes: Play against an AI as a code breaker or play against the AI as a code setter.
 //Some of the other features it handles includes but is not limited to:
 //   - tutorial
-//   - self test all cases (live progress bar animation)
+//   - self test all cases 
 //   - leaderboards and accounts
 //   - sound effects
 //The codebreaker class also handles on GUI and user interactions
