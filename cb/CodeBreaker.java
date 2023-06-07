@@ -495,6 +495,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         clearAll.setEnabled(false); // enabled to false -> only let the user clear when they have selected some
                                     // colours
 
+        submit.setEnabled(false);
         if (isCodeBreaker) { // if the player is the code breaker
 
             // generate a random code and print int out (for the users reference)
