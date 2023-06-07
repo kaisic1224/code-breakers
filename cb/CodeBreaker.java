@@ -81,6 +81,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static JTextField name;
     public static JFrame gameFrame;
 
+    // account logging in
+    public static String sessionName;
+
     public static void LoadAssets() {
         File records = new File("./cb/accounts/records.txt");
         if (!records.exists()) {
@@ -793,6 +796,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 }
                 if (verified.equals(username.getText())) {
                     frame.setVisible(false);
+                    sessionName = verified;
                     new CodeBreaker();
                 }
             }
@@ -944,6 +948,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         // add to buttons panel in the correct order, using Box.createRigidArea to space
         // them out by a pre-defined amount
+        JLabel session = new JLabel();
+        if (sessionName == null) {
+            session.setText("Not currently logged in");
+        } else {
+            session.setText("Currently logged in as: " + sessionName);
+        }
+
+        // add to buttons panel
+        buttons.add(session);
         buttons.add(aiPlay);
         buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
         buttons.add(personPlay);
@@ -1154,24 +1167,30 @@ public class CodeBreaker extends JFrame implements ActionListener {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] attemptHash = digest.digest(attemptPwd.getBytes(StandardCharsets.UTF_8));
 
-        if (account.exists()) {
-            br.close();
-            aw.close();
-            pw.close();
-            throw new Exception("Account already exists!");
-        }
         String line = br.readLine();
         while (line != null) {
             // Check if their requested name can be found inside the game records, if they
             // enter in an adjusted name with different capitalizations, do NOT let them
             // create an account as files are not allowed to have duplicate names even with
             // different capitiazlation
-            if (line.split(",")[0].equals(accountName)) {
+            if (!line.split(",")[0].equals(accountName) && line.split(",")[0].equalsIgnoreCase(accountName)) {
+                if (account.exists()) {
+                    br.close();
+                    aw.close();
+                    pw.close();
+                    throw new Exception("Account already exists!");
+                }
+            } else if (line.split(",")[0].equals(accountName)) {
                 // If their account can be found, then tell them they have logged in and return
                 // their name
-                String password = getPassword(accountName);
-                byte[] pwdHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-                if (Arrays.equals(attemptHash, pwdHash)) {
+                String pwdHash = getPassword(accountName);
+                String attemptHashString = "";
+                for (int i = 0; i < attemptHash.length; i++) {
+                    attemptHashString += attemptHash[i];
+                    if (i != attemptHash.length - 1)
+                        attemptHashString += ".";
+                }
+                if (attemptHashString.equals(pwdHash)) {
                     System.out.println("\nSuccessfully logged in as " + line.split(",")[0]);
                     pw.close();
                     br.close();
@@ -1192,7 +1211,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // couldn't be found in the game records and let them know they created an
         // account
         System.out.println("\nSuccessfully created account: " + accountName + " with password: " + attemptPwd);
-        pw.println(accountName + "," + attemptHash);
+        String formattedStoredPassword = "";
+        for (int i = 0; i < attemptHash.length; i++) {
+            formattedStoredPassword += attemptHash[i];
+            if (i != attemptHash.length - 1)
+                formattedStoredPassword += ".";
+        }
+        pw.println(accountName + "," + formattedStoredPassword);
 
         pw.close();
         br.close();
@@ -1298,8 +1323,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
         feedbackPanel.add(backToMenu);
-        feedbackPanel.add(name);
-        feedbackPanel.add(saveRecord);
 
         feedbackPanel.add(Box.createVerticalGlue());
 
