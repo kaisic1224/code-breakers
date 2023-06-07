@@ -892,6 +892,11 @@ public class CodeBreaker extends JFrame implements ActionListener {
             c.gridy = 5;
             loginPanel.add(backtoMenu, c);
 
+            JLabel newUserLabel = new JLabel("New users can enter in their desired username and password and then press login to create a new account.");
+            newUserLabel.setBorder(new EmptyBorder(50, 0, 0, 0));
+            c.gridy = 6;
+            loginPanel.add(newUserLabel, c);
+
             frame.add(loginPanel);
         } else {
             // if user has an existing session
@@ -937,16 +942,40 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
             DecimalFormat df = new DecimalFormat("0.00"); // create decimal formatter
             JPanel stats = new JPanel();
+            stats.setLayout(new BoxLayout(stats, BoxLayout.Y_AXIS));
             JLabel lifetimeTurnLabel = new JLabel("Lifetime turns: " + totalTurns); // display stats to user
+            lifetimeTurnLabel.setFont(ForeverFontTitle);
             JLabel lifetimeGameLabel = new JLabel("Lifetime games: " + totalGames);
+            lifetimeGameLabel.setFont(ForeverFontTitle);
             JLabel lifetimeWinsLabel = new JLabel("Lifetime wins: " + totalWins);
-            JLabel averageTurns = new JLabel("Average attempts: " + (df.format(totalTurns / totalGames)));
+            lifetimeWinsLabel.setFont(ForeverFontTitle);
+            JLabel averageTurns = null; 
+            try {
+                averageTurns = new JLabel("Average attempts: " + df.format(totalTurns / totalGames));
+            } catch (ArithmeticException e) {
+                averageTurns = new JLabel("Average attempts: 0.00");
+            }
+            averageTurns.setFont(ForeverFontTitle);
+
 
             stats.add(lifetimeTurnLabel);
             stats.add(lifetimeGameLabel);
             stats.add(lifetimeWinsLabel);
             stats.add(averageTurns);
             stats.add(backtoMenu);
+            JButton logout = new JButton("Log out");
+            logout.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    sessionName = null;
+                    new CodeBreaker();
+                    frame.setVisible(false);
+                }
+            });
+            stats.add(logout);
+
+            stats.setOpaque(true);
+            stats.setBackground(BGCOLOURORANGE);
+            frame.setBackground(BGCOLOURORANGE);
 
             frame.add(stats); // add stats to frame
 
@@ -1077,6 +1106,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         // intialize the button, using the same format as the previous button
         JButton login = new JButton("LOGIN", arrowImg);
+        if (sessionName != null) {
+            login.setText("Show stats");
+        }
         login.setBackground(BUTTONCOLOUR);
         login.setFont(ForeverFontBold);
         login.setHorizontalTextPosition(JButton.LEFT);
@@ -1313,7 +1345,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         JPanel mainPanel = new JPanel(); // basic styles
         mainPanel.setOpaque(true);
         mainPanel.setBackground(BGCOLOURORANGE);
-        JPanel leaderCharts = new JPanel(new GridLayout(10, 1)); // leadercharts holds the top 10 records by score and
+        JPanel leaderCharts = new JPanel(new GridLayout(12, 1)); // leadercharts holds the top 10 records by score and
                                                                  // date
 
         BufferedReader fr = new BufferedReader(new FileReader("./cb/accounts/records.txt")); // read from the file
@@ -1375,28 +1407,41 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         }
 
+        JLabel chartHeader = new JLabel("User       Attempts           Date");
+        chartHeader.setFont(ForeverFontTitle);
+        leaderCharts.add(chartHeader);
         // only first 10 records
         for (int j = 0; j < 10; j++) {
             JPanel recordRow = new JPanel();
             String[] log = records[j].split(",");
             JLabel user = new JLabel(log[0]);
+            user.setBorder(new EmptyBorder(0, 0, 0, 360));
+            user.setFont(ForeverFontTitle);
             JLabel score = new JLabel(log[1]);
+            score.setFont(ForeverFontTitle);
+            score.setBorder(new EmptyBorder(0, 0, 0, 360));
             JLabel date = !log[2].equals(" ") // if the date is not empty, then create a datetime of the given date -
-                                              // otherwise just create an empty jlabel
-                    ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
-                    : new JLabel();
+            // otherwise just create an empty jlabel
+            ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+            : new JLabel();
+            date.setFont(ForeverFontTitle);
             recordRow.add(user); // add all information in each row
             recordRow.add(score);
             recordRow.add(date);
             recordRow.setOpaque(true);
+            recordRow.setBackground(BGCOLOURORANGE);
             if (log[0].equals(sessionName)) { // highlight records that belong to the user
-                recordRow.setBackground(Color.ORANGE);
+                recordRow.setBackground(Color.YELLOW);
             }
 
             leaderCharts.add(recordRow);
+            leaderCharts.setOpaque(true);
+            leaderCharts.setBackground(BGCOLOURORANGE);
         }
 
         mainPanel.add(leaderCharts);
+        mainPanel.setOpaque(true);
+        mainPanel.setBackground(BGCOLOURORANGE);
         JButton backToMenu = new JButton("Back to Menu"); // create btn to allow user to travel back to the main menu
         backToMenu.setFont(ForeverFontBold);
         backToMenu.setHorizontalTextPosition(JButton.LEFT);
@@ -1410,7 +1455,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         });
         backToMenu.setBackground(BUTTONCOLOUR);
 
-        mainPanel.add(backToMenu); // add panels and buttons back to menu
+        leaderCharts.add(backToMenu); // add panels and buttons back to menu
         frame.add(mainPanel);
         frame.pack();
         frame.setVisible(true);
