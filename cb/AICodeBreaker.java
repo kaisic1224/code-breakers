@@ -184,7 +184,7 @@ public class AICodeBreaker {
      * generate all possible colour combinations (6 colours and 4 combinations) and
      * store them in remainingCombos and allCombos
      *
-     * @param numPositions - int, the nubmer of positions our code has
+     * @param numPositions - int, the number of positions our code has
      * @return nothing
      */
 
