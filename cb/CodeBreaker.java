@@ -53,6 +53,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
     public static JFrame gameFrame;
 
+    // account logging in
+    public static String sessionName;
+
     public static void LoadAssets() {
         File records = new File("./cb/accounts/records.txt");
         if (!records.exists()) {
@@ -561,27 +564,39 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // a function to clear all colours user selected
         clearAll.addActionListener(new ActionListener() {
 
-    public void actionPerformed(ActionEvent e) {
-        music(false, "./cb/assets/sounds/pop.wav");
+            public void actionPerformed(ActionEvent e) {
+                music(false, "./cb/assets/sounds/pop.wav");
 
-        clearAll.setEnabled(false);
+                clearAll.setEnabled(false);
 
-        displayColours.removeAll();
-        displayColours.revalidate();
-        displayColours.repaint();
-        numColoursSelected = 0;
-    }});colourPicker.add(clearAll);colourPicker.add(submit);
+                displayColours.removeAll();
+                displayColours.revalidate();
+                displayColours.repaint();
+                numColoursSelected = 0;
+            }
+        });
+        colourPicker.add(clearAll);
+        colourPicker.add(submit);
 
-    // panel layouts
-    GridBagConstraints c = new GridBagConstraints();c.gridy=0;frame.add(currentRound,c);
+        // panel layouts
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridy = 0;
+        frame.add(currentRound, c);
 
-    mainPanel.add(boardPanel);mainPanel.add(feedbackPanel);c.gridy=1; // take the first row in the layout
-    c.fill=GridBagConstraints.HORIZONTAL; // fill in width
-    c.anchor=GridBagConstraints.NORTH;c.weightx=1.0;frame.add(mainPanel,c);
+        mainPanel.add(boardPanel);
+        mainPanel.add(feedbackPanel);
+        c.gridy = 1; // take the first row in the layout
+        c.fill = GridBagConstraints.HORIZONTAL; // fill in width
+        c.anchor = GridBagConstraints.NORTH;
+        c.weightx = 1.0;
+        frame.add(mainPanel, c);
 
-    c.gridy=2;frame.add(colourPicker,c);
+        c.gridy = 2;
+        frame.add(colourPicker, c);
 
-    c.gridy=3;frame.add(displayColours,c);frame.setVisible(true);
+        c.gridy = 3;
+        frame.add(displayColours, c);
+        frame.setVisible(true);
     }
 
     public static void userLogin(JFrame frame) {
@@ -597,7 +612,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         usernamePanel.add(username);
         loginPanel.add(usernamePanel);
         loginPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
-        
+
         JPanel passwordPanel = new JPanel(new FlowLayout());
         JLabel passwordLabel = new JLabel("Password: ");
         JTextField password = new JTextField("", 20);
@@ -615,10 +630,11 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     verified = login(username.getText(), password.getText());
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    errorText.setText(ex.getMessage());                
+                    errorText.setText(ex.getMessage());
                 }
                 if (verified.equals(username.getText())) {
                     frame.setVisible(false);
+                    sessionName = verified;
                     new CodeBreaker();
                 }
             }
@@ -744,7 +760,15 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         });
 
+        JLabel session = new JLabel();
+        if (sessionName == null) {
+            session.setText("Not currently logged in");
+        } else {
+            session.setText("Currently logged in as: " + sessionName);
+        }
+
         // add to buttons panel
+        buttons.add(session);
         buttons.add(aiPlay);
         buttons.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING)));
         buttons.add(personPlay);
@@ -900,24 +924,30 @@ public class CodeBreaker extends JFrame implements ActionListener {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] attemptHash = digest.digest(attemptPwd.getBytes(StandardCharsets.UTF_8));
 
-        if (account.exists()) {
-            br.close();
-            aw.close();
-            pw.close();
-            throw new Exception("Account already exists!");
-        }
         String line = br.readLine();
         while (line != null) {
             // Check if their requested name can be found inside the game records, if they
             // enter in an adjusted name with different capitalizations, do NOT let them
             // create an account as files are not allowed to have duplicate names even with
             // different capitiazlation
-            if (line.split(",")[0].equals(accountName)) {
+            if (!line.split(",")[0].equals(accountName) && line.split(",")[0].equalsIgnoreCase(accountName)) {
+                if (account.exists()) {
+                    br.close();
+                    aw.close();
+                    pw.close();
+                    throw new Exception("Account already exists!");
+                }
+            } else if (line.split(",")[0].equals(accountName)) {
                 // If their account can be found, then tell them they have logged in and return
                 // their name
-                String password = getPassword(accountName);
-                byte[] pwdHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-                if (Arrays.equals(attemptHash, pwdHash)) {
+                String pwdHash = getPassword(accountName);
+                String attemptHashString = "";
+                for (int i = 0; i < attemptHash.length; i++) {
+                    attemptHashString+=attemptHash[i];
+                    if (i != attemptHash.length-1)
+                    attemptHashString+=".";
+                }
+                if (attemptHashString.equals(pwdHash)) {
                     System.out.println("\nSuccessfully logged in as " + line.split(",")[0]);
                     pw.close();
                     br.close();
@@ -938,7 +968,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
         // couldn't be found in the game records and let them know they created an
         // account
         System.out.println("\nSuccessfully created account: " + accountName + " with password: " + attemptPwd);
-        pw.println(accountName + "," + attemptHash);
+        String formattedStoredPassword = "";
+        for (int i = 0; i < attemptHash.length; i++) {
+            formattedStoredPassword += attemptHash[i];
+            if (i != attemptHash.length - 1)
+                formattedStoredPassword += ".";
+        }
+        pw.println(accountName + "," + formattedStoredPassword);
 
         pw.close();
         br.close();
@@ -1044,8 +1080,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
         feedbackPanel.add(backToMenu);
-        feedbackPanel.add(name);
-        feedbackPanel.add(saveRecord);
 
         feedbackPanel.add(Box.createVerticalGlue());
 
