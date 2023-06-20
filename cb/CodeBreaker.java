@@ -70,7 +70,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
     static Color[] feedbackColours = { Color.black, Color.white };
     // an array which stores the feedback the player gives to the AI
     static String[] playerFeedback;
-
+    // player is codebreaker
+    public static boolean isCodeBreakerGlobal;
     // counters
     static int numColoursSelected = 0; // keeps track of the number of colours the player selected
     static int attempts = 0; // keeps track of the number of attempts the user has taken so far
@@ -85,6 +86,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
     public static JLabel sessionLabel;
     public static JPanel sessionPanel;
     public static JButton login;
+    public static Component[] cells;
 
     // account logging in
     public static String sessionName;
@@ -441,9 +443,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
      *                      we can display GUI added to panels)
      * @param isCodeBreaker - boolean, determines wheter or not the player is a code
      *                      breaker
+     * @param gameData      - String[], if the game frame should be rendered as a
+     *                      past game, then use this data to populate the board
+     * 
      * @return nothing
      */
-    public static void Game(JFrame frame, boolean isCodeBreaker) {
+    public static void Game(JFrame frame, boolean isCodeBreaker, String[] gameData) {
 
         // reset counters used in case the user goes to the menu and plays again
         attempts = 0;
@@ -498,6 +503,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         colourPicker = new JPanel(new FlowLayout()); // colour picker stores the colours we can choose from
         displayColours = new JPanel(new FlowLayout()); // display colour displays the colours we have selected
+        displayColours.setPreferredSize(new Dimension(WIDTH, 60));
 
         JButton clearAll = new JButton("Clear all"); // allows us to clear our selection
         JButton submit = new JButton("Submit"); // allows us to submit our selection
@@ -508,6 +514,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                                     // colours
 
         if (isCodeBreaker) { // if the player is the code breaker
+            isCodeBreakerGlobal = true;
 
             // generate a random code and print int out (for the users reference)
             board.generateCode();
@@ -629,8 +636,97 @@ public class CodeBreaker extends JFrame implements ActionListener {
                     currentRound.setText("Guesses Left = " + (board.getTries() - attempts));
                 }
             });
+            if (gameData != null) {
+                boardPanel.removeAll();
+                for (int i = 0; i < board.getTries(); i++) {
+                    for (int j = 0; j < board.getSize(); j++) {
+                        Color c = null;
+                        int index = (i * board.getSize() + j);
+                        if (gameData[index].equals("INVALID COLOUR")) {
+                            c = BGCOLOURBEIGE;
+                        } else {
+                            c = stringToColor(gameData[index]);
+                        }
+                        JLabel cell = new JLabel();
+                        cell.setPreferredSize(new Dimension(50, 50));
+                        cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        cell.setOpaque(true);
+                        cell.setBackground(c);
+                        // guess[j] = c;
+                        boardPanel.add(cell);
+                    }
+                }
+                // the display Colours panel
+
+                // convert the background colours of the labels in display colour into a string.
+                // The player's guess is now stored in colors
+                String[] colors = new String[4];
+                for (int i = 0; i < board.getTries(); i++) {
+                    for (int j = 0; j < board.getSize(); j++) {
+                        int index = (i * board.getSize() + j);
+                        if (gameData[index].equals("INVALID COLOUR")) {
+                            continue;
+                        } else {
+                            colors[j] = gameData[index];
+                        }
+                    }
+                    if (colors[0] != null) {
+                        String[] winner = gameData[40].split(">");
+                        String[] evaluation = board.checkGuess(colors, winner);
+                        int[] pegs = board.returnPegs(evaluation); // get number of blacks and whites
+                        String[] feedback = new String[4]; // store the feedback in an array so we can add it to
+
+                        // we want to ensure that the feedback we are giving is an organized order
+                        // (whites first, then blacks). As per the rules of the game, each feedback peg
+                        // doesn't correlate with a positionin the player's guesss.
+                        for (int k = 0; k < pegs[0]; k++) {
+                            feedback[k] = Color.white.toString();
+                        }
+                        for (int k = 0; k < pegs[1]; k++) {
+                            int subIndex = pegs[0] + k;
+                            feedback[subIndex] = Color.black.toString();
+                        }
+                        // add feedback to the feedback history & update the GUI
+                        board.feedback[attempts] = feedback; // board.getTries() - 1 - attempts
+                                                                                    // so we
+                                                                                    // go from bottom to top rather than
+                                                                                    // top
+                                                                                    // to bottom
+                    } else {
+                                                board.feedback[board.getTries() - 1 - attempts] = colors; // board.getTries() - 1 - attempts
+
+                    }
+                    // compare the current guess with the code the AI generated
+
+                                                       // board.feedback
+
+                    revalidateFeedback();
+                    JButton returnHome = new JButton("Return home");
+                    returnHome.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            frame.setVisible(false);
+                            new CodeBreaker();
+                        }
+                    });
+                    attempts++;
+                    boardPanel.revalidate();
+                    boardPanel.repaint();
+                    displayColours.removeAll();
+                    displayColours.add(returnHome);
+                    displayColours.revalidate();
+                    displayColours.repaint();
+                    colourPicker.removeAll();
+                    colourPicker.revalidate();
+                    colourPicker.repaint();
+                    clearAll.setPreferredSize(new Dimension(0, 0));
+                    submit.setPreferredSize(new Dimension(0, 0));
+                    // currentRound.setText("Guessed in " + );
+                }
+
+            }
 
         } else {
+            isCodeBreakerGlobal = false;
             AI = new AICodeBreaker(); // create a new AI object and generate all possible combinations
             AI.generateAllCombos(board.getSize());
 
@@ -859,10 +955,9 @@ public class CodeBreaker extends JFrame implements ActionListener {
                         verified = login(username.getText(), password.getText()); // will check if their login is
                                                                                   // successful
                     } catch (Exception ex) {
-                        ex.printStackTrace();
                         errorText.setText(ex.getMessage()); // display any errors to the user
                     }
-                    if (verified.equals(username.getText())) { // if their login is successful
+                    if (username.getText().equals(verified)) { // if their login is successful
                         frame.setVisible(false);
                         sessionName = verified; // update instance variable for session
                         if (prevFrame == null) {
@@ -876,7 +971,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                             try {
                                 saveToFile(sessionName);
                             } catch (Exception e1) {
-                                e1.printStackTrace();
+                                errorText.setText(e1.getMessage());
                             }
                         }
                     }
@@ -892,7 +987,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
             c.gridy = 5;
             loginPanel.add(backtoMenu, c);
 
-            JLabel newUserLabel = new JLabel("New users can enter in their desired username and password and then press login to create a new account.");
+            JLabel newUserLabel = new JLabel(
+                    "New users can enter in their desired username and password and then press login to create a new account.");
             newUserLabel.setBorder(new EmptyBorder(50, 0, 0, 0));
             c.gridy = 6;
             loginPanel.add(newUserLabel, c);
@@ -949,14 +1045,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
             lifetimeGameLabel.setFont(ForeverFontTitle);
             JLabel lifetimeWinsLabel = new JLabel("Lifetime wins: " + totalWins);
             lifetimeWinsLabel.setFont(ForeverFontTitle);
-            JLabel averageTurns = null; 
+            JLabel averageTurns = null;
             try {
                 averageTurns = new JLabel("Average attempts: " + df.format(totalTurns / totalGames));
             } catch (ArithmeticException e) {
                 averageTurns = new JLabel("Average attempts: 0.00");
             }
             averageTurns.setFont(ForeverFontTitle);
-
 
             stats.add(lifetimeTurnLabel);
             stats.add(lifetimeGameLabel);
@@ -966,8 +1061,8 @@ public class CodeBreaker extends JFrame implements ActionListener {
             JButton logout = new JButton("Log out");
             logout.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    sessionName = null;
-                    new CodeBreaker();
+                    sessionName = null; // make session null
+                    new CodeBreaker(); // display main page
                     frame.setVisible(false);
                 }
             });
@@ -1034,7 +1129,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 // create anew frame, indicating the player is the code breaker
                 gameFrame = new JFrame("Code Breakers | Player is code breaker");
                 board = new Board(); // intalize board
-                Game(gameFrame, true); // codebreaker is set to true
+                Game(gameFrame, true, null); // codebreaker is set to true
                 setVisible(false); // destory the current frame
             }
         });
@@ -1056,7 +1151,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
                 // create a frame which lets the player know they are now the code setter
                 gameFrame = new JFrame("Code Breakers | Player is code setter");
                 board = new Board();
-                Game(gameFrame, false); // player is codeBreaker is false!
+                Game(gameFrame, false, null); // player is codeBreaker is false!
 
                 playerIsCodeSetter(-1, -1, AI.getLastGuess()); // intailzie the AI's first guess with (-1,-1)
                 setVisible(false); // hide current frame
@@ -1209,15 +1304,6 @@ public class CodeBreaker extends JFrame implements ActionListener {
 
         } else if (attempts == board.getTries()) {
             finalMessage("YOU LOSE! (no more attempts) ", code);
-            if (sessionName != null) {
-                try {
-                    saveToFile(sessionName);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // TODO: prompt login
-            }
         }
 
     }
@@ -1347,7 +1433,10 @@ public class CodeBreaker extends JFrame implements ActionListener {
         mainPanel.setBackground(BGCOLOURORANGE);
         JPanel leaderCharts = new JPanel(new GridLayout(12, 1)); // leadercharts holds the top 10 records by score and
                                                                  // date
-
+        File recordsFile = new File("./cb/accounts/records.txt");
+        if (!recordsFile.exists()) {
+            recordsFile.createNewFile();
+        }
         BufferedReader fr = new BufferedReader(new FileReader("./cb/accounts/records.txt")); // read from the file
                                                                                              // containnig history of
                                                                                              // all games and their
@@ -1407,30 +1496,57 @@ public class CodeBreaker extends JFrame implements ActionListener {
             }
         }
 
-        JLabel chartHeader = new JLabel("User     Attempts         Date");
-        chartHeader.setFont(ForeverFontTitle);
-        leaderCharts.add(chartHeader);
+        JPanel chartHeader = new JPanel(); // chart header
+        chartHeader.setBackground(BGCOLOURORANGE);
+        JLabel userLabel = new JLabel("User     ");
+        JLabel attemptLabel = new JLabel("Attempts         ");
+        JLabel dateLabel = new JLabel("Date     ");
+        JLabel recordLabel = new JLabel("Record     ");
+        userLabel.setFont(ForeverFontTitle); // setting font for each header item
+        attemptLabel.setFont(ForeverFontTitle);
+        dateLabel.setFont(ForeverFontTitle);
+        recordLabel.setFont(ForeverFontTitle);
+        chartHeader.add(userLabel); // add each item to jpanel
+        chartHeader.add(attemptLabel);
+        chartHeader.add(dateLabel);
+        chartHeader.add(recordLabel);
+        leaderCharts.add(chartHeader); // add header to chart
         // only first 10 records
         for (int j = 0; j < 10; j++) {
             JPanel recordRow = new JPanel();
-            String[] log = records[j].split(",");
+            String[] log = records[j].split(","); // data is in format: user,attempts,date,game
             if (Integer.parseInt(log[1]) > 10) {
                 log[1] = "";
             }
-            JLabel user = new JLabel(log[0]);
+            JLabel user = new JLabel(log[0]); // assign data
             user.setBorder(new EmptyBorder(0, 0, 0, 300));
-            user.setFont(ForeverFontTitle);
+            user.setFont(ForeverFontTitle); // update fonts
             JLabel score = new JLabel(log[1]);
-            score.setFont(ForeverFontTitle);
+            score.setFont(ForeverFontTitle); // assign data
             score.setBorder(new EmptyBorder(0, 0, 0, 300));
             JLabel date = !log[2].equals(" ") // if the date is not empty, then create a datetime of the given date -
-            // otherwise just create an empty jlabel
-            ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
-            : new JLabel();
+                    // otherwise just create an empty jlabel
+                    ? new JLabel(LocalDateTime.parse(log[2]).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+                    : new JLabel();
             date.setFont(ForeverFontTitle);
+            String[] gameData = log[3].split("\\|");
+            JButton viewGame = new JButton("View game");
+
+            viewGame.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    JFrame f = new JFrame();
+                    board = new Board();
+                    Game(f, true, gameData);
+                    frame.setVisible(false);
+                }
+            });
+
             recordRow.add(user); // add all information in each row
             recordRow.add(score);
             recordRow.add(date);
+            if (!log[2].equals(" ")) {
+                recordRow.add(viewGame);
+            }
             recordRow.setOpaque(true);
             recordRow.setBackground(BGCOLOURORANGE);
             if (log[0].equals(sessionName)) { // highlight records that belong to the user
@@ -1590,7 +1706,12 @@ public class CodeBreaker extends JFrame implements ActionListener {
         LocalDateTime ld = LocalDateTime.now(); // create current timestamp
 
         aw.println(attempts);
-        String code = String.join("", board.getCode()); // store the game winning code in the record
+        String[] historyColors = new String[cells.length];
+        for (int i = 0; i < board.getTries() * board.getSize(); i++) {
+            historyColors[i] = board.colorToString(cells[i].getBackground());
+        }
+        String code = String.join("|", historyColors); // store the game winning code in the record
+        code += "|" + String.join(">", board.getCode());
         pw.println(accountName + "," + attempts + "," + ld + "," + code);
 
         aw.close(); // close any objects to prevent memory leaks
@@ -1606,6 +1727,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
      * @return nothing
      */
     public static void finalMessage(String message, String[] code) {
+        cells = boardPanel.getComponents();
         feedbackPanel.removeAll(); // empty out display first and clear everything
         boardPanel.removeAll();
         colourPicker.removeAll();
@@ -1661,7 +1783,7 @@ public class CodeBreaker extends JFrame implements ActionListener {
         feedbackPanel.add(Box.createRigidArea(new Dimension(0, MENUBUTTONSPACING * 2)));
 
         sessionPanel = new JPanel(new GridBagLayout()); // create panel for identifying if the user has a session
-                                                               // or not (is logged in or not)
+                                                        // or not (is logged in or not)
         sessionLabel = new JLabel();
         login = new JButton("Sign in"); // button for redirecting user to login panel
         login.addActionListener(new ActionListener() {
@@ -1682,10 +1804,13 @@ public class CodeBreaker extends JFrame implements ActionListener {
             sessionLabel.setText("Currently signed in as: " + sessionName); // otherwise let them know which account
                                                                             // they are logged in and save their file to
                                                                             // record
-            try {
-                saveToFile(sessionName);
-            } catch (Exception e1) {
-                e1.printStackTrace();
+
+            if (isCodeBreakerGlobal) {
+                try {
+                    saveToFile(sessionName);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
         }
 
@@ -1704,9 +1829,11 @@ public class CodeBreaker extends JFrame implements ActionListener {
     }
 
     /**
-     * Takes in the name of a colour, ex. cyan, red, white, etc. and returns the associated java.awt.color value of it
+     * Takes in the name of a colour, ex. cyan, red, white, etc. and returns the
+     * associated java.awt.color value of it
+     * 
      * @param colourName - the string name of the colour
-     * @return           - the Color equivalent to a string
+     * @return - the Color equivalent to a string
      */
     public static Color stringToColor(String colourName) {
         Color c = null;
