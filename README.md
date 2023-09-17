@@ -2,7 +2,7 @@
 ICS4U1 final project
 Code breaker style game designed and created in java and Java Swing
 
-Written and create @IsaacYu15 and @kaisic1224
+Written and create [@IsaacYu15](https://github.com/IsaacYu15) and [@kaisic1224](https://github.com/kaisic1224)
 
 
 # Getting Started
